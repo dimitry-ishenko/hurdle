@@ -9,16 +9,16 @@
 
 #include <cstdio>
 #include <stdexcept>
-#include <thread>
+#include <utility>
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace src
 {
 
 ////////////////////////////////////////////////////////////////////////////////
-part::part(const src::settings& settings, int nr, const src::range& range) :
+part::part(const src::settings& settings, int nr, src::range range) :
     util::logger("Part" + std::to_string(nr)),
-    settings_(settings), path_(settings_.output)
+    nr_(nr), range_(std::move(range)), path_(settings.output)
 {
     auto from = std::get<0>(range), to = std::get<1>(range);
 
@@ -33,41 +33,14 @@ part::part(const src::settings& settings, int nr, const src::range& range) :
     info() << "opening file " << path_;
     using std::ios_base;
     file_.open(path_, ios_base::out | ios_base::app | ios_base::binary);
-
     if(!file_) throw std::invalid_argument("Cannot open file");
 
-    if(file_.tellp())
-    {
-        info() << "skipping " << file_.tellp();
-        from += file_.tellp();
-    }
-    if(from > to) throw std::invalid_argument("Invalid range");
-
-    ////////////////////
-    handle_ = curl_easy_init();
-
-    curl_easy_setopt(handle_, CURLOPT_URL, settings_.url.data());
-    curl_easy_setopt(handle_, CURLOPT_FAILONERROR, true);
-
-    curl_easy_setopt(handle_, CURLOPT_WRITEFUNCTION, &part::write);
-    curl_easy_setopt(handle_, CURLOPT_WRITEDATA, this);
-
-    curl_easy_setopt(handle_, CURLOPT_CONNECTTIMEOUT, settings_.read_timeout.count());
-    curl_easy_setopt(handle_, CURLOPT_LOW_SPEED_LIMIT, 1);
-    curl_easy_setopt(handle_, CURLOPT_LOW_SPEED_TIME, settings_.read_timeout.count());
-
-    curl_easy_setopt(handle_, CURLOPT_RANGE, from_to.data());
-
-    ////////////////////
-    future_ = std::async(std::launch::async, &part::proc, this);
+    size_ = file_.tellp();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 part::~part() noexcept
 {
-    future_.wait();
-    curl_easy_cleanup(handle_);
-
     info() << "closing file";
     file_.close();
 
@@ -76,41 +49,14 @@ part::~part() noexcept
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-bool part::done() const
+offset part::write(const char* data, offset n)
 {
-    using namespace std::chrono_literals;
-    return future_.wait_for(0s) == std::future_status::ready;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-void part::proc()
-{
-    CURLcode code = CURLE_OK;
-    for(auto count = 0; count < settings_.retry_count; ++count)
+    if(file_.write(data, n))
     {
-        if(count) info() << "Retrying";
-
-        code = curl_easy_perform(handle_);
-        if(code == CURLE_OK) break;
-
-        std::this_thread::sleep_for(settings_.retry_sleep);
+        size_ = file_.tellp();
+        return n;
     }
-    if(code != CURLE_OK) throw std::runtime_error(curl_easy_strerror(code));
-
-    // merge
-}
-
-////////////////////////////////////////////////////////////////////////////////
-size_t part::write(void* data, size_t size, size_t n, void* self)
-{
-    part* p = static_cast<part*>(self);
-    auto total = size * n;
-
-    p->file_.write(static_cast<const char*>(data), total);
-    if(!p->file_) return 0;
-
-    p->length_ = p->file_.tellp();
-    return total;
+    else return 0;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

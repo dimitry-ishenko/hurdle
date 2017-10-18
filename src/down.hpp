@@ -5,50 +5,44 @@
 // Distributed under the GNU GPL license. See the LICENSE.md file for details.
 
 ////////////////////////////////////////////////////////////////////////////////
-#ifndef SRC_PART_HPP
-#define SRC_PART_HPP
+#ifndef SRC_DOWN_HPP
+#define SRC_DOWN_HPP
 
 ////////////////////////////////////////////////////////////////////////////////
+#include "part.hpp"
 #include "settings.hpp"
 #include "util/logging.hpp"
 
-#include <atomic>
-#include <fstream>
-#include <memory>
-#include <string>
+#include <future>
+#include <curl/curl.h>
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace src
 {
 
 ////////////////////////////////////////////////////////////////////////////////
-class part : private util::logger
+class down : private util::logger
 {
 public:
     ////////////////////
-    part(const settings&, int nr, src::range);
-    ~part() noexcept;
+    explicit down(const settings&, shared_part);
+    ~down() noexcept;
 
-    auto nr() const noexcept { return nr_; }
-    auto const& range() const noexcept { return range_; }
-
-    // called from another thread
-    offset write(const char*, offset);
-    auto size() const noexcept { return size_.load(); }
+    auto const& part() const noexcept { return part_; }
+    bool done() const;
 
 private:
     ////////////////////
-    int nr_;
-    src::range range_;
+    const settings& settings_;
+    CURL* handle_;
 
-    std::string path_;
-    std::fstream file_;
+    shared_part part_;
 
-    std::atomic<offset> size_ { 0 };
+    std::future<void> future_;
+    void proc();
+
+    static size_t write(void* data, size_t size, size_t n, void* self);
 };
-
-////////////////////////////////////////////////////////////////////////////////
-using shared_part = std::shared_ptr<part>;
 
 ////////////////////////////////////////////////////////////////////////////////
 }
