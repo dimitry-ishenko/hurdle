@@ -5,6 +5,7 @@
 // Distributed under the GNU GPL license. See the LICENSE.md file for details.
 
 ////////////////////////////////////////////////////////////////////////////////
+#include "settings.hpp"
 #include "util/logging.hpp"
 
 #include <iostream>
@@ -18,7 +19,7 @@ constexpr int major = 0;
 constexpr int minor = 1;
 
 enum status { good, done };
-status read_args(int argc, char* argv[]);
+status read_args(int argc, char* argv[], src::settings&);
 void version(const char*);
 void usage(const char*);
 
@@ -30,7 +31,8 @@ int main(int argc, char* argv[])
 
     try
     {
-        if(read_args(argc, argv) == good)
+        src::settings settings;
+        if(read_args(argc, argv, settings) == good)
         {
             //
         }
@@ -51,7 +53,7 @@ int main(int argc, char* argv[])
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-status read_args(int argc, char* argv[])
+status read_args(int argc, char* argv[], src::settings&)
 {
     for(int i = 1; i < argc; ++i)
     {
