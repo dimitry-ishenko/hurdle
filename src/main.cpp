@@ -18,8 +18,12 @@
 constexpr int major = 0;
 constexpr int minor = 1;
 
-enum status { good, done };
-status read_args(int argc, char* argv[], src::settings&);
+struct invalid_argument : public std::invalid_argument
+{ using std::invalid_argument::invalid_argument; };
+
+struct need_to_exit : public std::exception { };
+
+void read_args(int argc, char* argv[], src::settings&);
 void version(const char*);
 void usage(const char*);
 
@@ -32,11 +36,17 @@ int main(int argc, char* argv[])
     try
     {
         src::settings settings;
-        if(read_args(argc, argv, settings) == good)
-        {
-            //
-        }
+        read_args(argc, argv, settings);
+
+        //
     }
+    catch(invalid_argument& e)
+    {
+        std::cout << e.what() << "\n" << std::endl;
+        usage(argv[0]);
+        code = 1;
+    }
+    catch(need_to_exit&) { }
     catch(std::exception& e)
     {
         std::cerr << e.what() << std::endl;
@@ -53,7 +63,7 @@ int main(int argc, char* argv[])
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-status read_args(int argc, char* argv[], src::settings&)
+void read_args(int argc, char* argv[], src::settings&)
 {
     for(int i = 1; i < argc; ++i)
     {
@@ -62,23 +72,18 @@ status read_args(int argc, char* argv[], src::settings&)
 
         if(arg == "-v" || arg == "--version")
         {
-            version(argv[0]); return done;
+            version(argv[0]); throw need_to_exit();
         }
         else if(arg == "-h" || arg == "--help")
         {
-            usage(argv[0]); return done;
+            usage(argv[0]); throw need_to_exit();
         }
         else if(arg == "-q" || arg == "--quiet")
         {
             util::send_to_console(false);
         }
-        else
-        {
-            std::cout << "Invalid argument: " << arg << "\n" << std::endl;
-            usage(argv[0]); return done;
-        }
+        else throw invalid_argument("Invalid argument: " + arg);
     }
-    return good;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
