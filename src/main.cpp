@@ -63,26 +63,43 @@ int main(int argc, char* argv[])
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void read_args(int argc, char* argv[], src::settings&)
+void read_args(int argc, char* argv[], src::settings& settings)
 {
     for(int i = 1; i < argc; ++i)
     {
         std::string arg = argv[i];
-        if(arg.empty()) continue;
 
-        if(arg == "-v" || arg == "--version")
+             if(arg.empty()) continue;
+        else if(arg == "-v" || arg == "--version") version(argv[0]), throw need_to_exit();
+        else if(arg == "-h" || arg == "--help"   ) usage(argv[0]), throw need_to_exit();
+        else if(arg == "-q" || arg == "--quiet"  ) util::send_to_console(false);
+        else if(arg == "-o" || arg == "--output" )
         {
-            version(argv[0]); throw need_to_exit();
+            if(i + 1 < argc) settings.output = argv[++i];
+            else throw invalid_argument("Missing output path");
         }
-        else if(arg == "-h" || arg == "--help")
+        else if(0 == arg.compare(0, 9, "--output="))
         {
-            usage(argv[0]); throw need_to_exit();
+            if(arg.size() > 9) settings.output = arg.substr(9);
+            else throw invalid_argument("Missing output path");
         }
-        else if(arg == "-q" || arg == "--quiet")
-        {
-            util::send_to_console(false);
-        }
+        else if(arg[0] != '-') settings.url = arg;
         else throw invalid_argument("Invalid argument: " + arg);
+    }
+
+
+    ////////////////////
+    if(settings.url.empty()) throw invalid_argument("Missing url");
+
+    if(settings.output.empty())
+    {
+        settings.output = settings.url;
+
+        auto p = settings.output.find_first_of('?');
+        if(p != std::string::npos) settings.output.resize(p);
+
+        p = settings.output.find_last_of('/');
+        if(p != std::string::npos) settings.output.erase(0, p + 1);
     }
 }
 
@@ -95,10 +112,11 @@ void version(const char* name)
 ////////////////////////////////////////////////////////////////////////////////
 void usage(const char* name)
 {
-    std::cout << "Usage: " << name << " [option...]\n" << std::endl;
+    std::cout << "Usage: " << name << " [option...] <url>\n" << std::endl;
     std::cout << "Where [option...] is one or more of the following:\n"
                  "    -v, --version        Show version info and exit\n"
                  "    -h, --help           Show this help screen and exit\n"
                  "    -q, --quiet          Don't output anything\n"
+                 "    -o, --output=<path>  Output data to <path>\n"
               << std::endl;
 }
