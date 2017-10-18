@@ -5,31 +5,53 @@
 // Distributed under the GNU GPL license. See the LICENSE.md file for details.
 
 ////////////////////////////////////////////////////////////////////////////////
-#ifndef SRC_SETTINGS_HPP
-#define SRC_SETTINGS_HPP
+#ifndef SRC_PART_HPP
+#define SRC_PART_HPP
 
 ////////////////////////////////////////////////////////////////////////////////
-#include <chrono>
+#include "settings.hpp"
+#include "util/logging.hpp"
+
+#include <atomic>
+#include <fstream>
+#include <future>
+#include <ios>
 #include <string>
+#include <tuple>
+
+#include <curl/curl.h>
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace src
 {
 
-////////////////////////////////////////////////////////////////////////////////
-using secs = std::chrono::seconds;
-using namespace std::chrono_literals;
+using offset = std::streamoff;
+using range = std::tuple<offset, offset>;
 
 ////////////////////////////////////////////////////////////////////////////////
-struct settings
+class part : private util::logger
 {
-    std::string url;
-    std::string output;
+public:
+    ////////////////////
+    part(const settings&, int nr, const range&);
+    ~part() noexcept;
 
-    secs read_timeout = 20s;
+    auto length() const noexcept { return length_.load(); }
+    bool done() const;
 
-    int retry_count = 10;
-    secs retry_sleep = 3s;
+private:
+    ////////////////////
+    const settings& settings_;
+    CURL* handle_;
+
+    std::string path_;
+    std::fstream file_;
+    std::atomic<offset> length_ { 0 };
+
+    std::future<void> future_;
+    void proc();
+
+    static size_t write(void* data, size_t size, size_t n, void* self);
 };
 
 ////////////////////////////////////////////////////////////////////////////////
