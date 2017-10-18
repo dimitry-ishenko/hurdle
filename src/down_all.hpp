@@ -5,29 +5,29 @@
 // Distributed under the GNU GPL license. See the LICENSE.md file for details.
 
 ////////////////////////////////////////////////////////////////////////////////
-#ifndef SRC_MANAGER_HPP
-#define SRC_MANAGER_HPP
+#ifndef SRC_DOWN_ALL_HPP
+#define SRC_DOWN_ALL_HPP
 
 ////////////////////////////////////////////////////////////////////////////////
-#include "settings.hpp"
+#include "down.hpp"
 #include "head.hpp"
 #include "output.hpp"
 #include "part.hpp"
+#include "settings.hpp"
 #include "util/logging.hpp"
 
 #include <map>
-#include <memory>
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace src
 {
 
 ////////////////////////////////////////////////////////////////////////////////
-class manager : private util::logger
+class down_all : private util::logger
 {
 public:
     ////////////////////
-    explicit manager(const settings&);
+    explicit down_all(const settings&);
 
     int run();
 
@@ -38,7 +38,7 @@ private:
     output output_;
 
     int nr = 0;
-    std::map<int, std::unique_ptr<part>> parts_;
+    std::map<int, down> down_;
 };
 
 ////////////////////////////////////////////////////////////////////////////////

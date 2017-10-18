@@ -5,7 +5,7 @@
 // Distributed under the GNU GPL license. See the LICENSE.md file for details.
 
 ////////////////////////////////////////////////////////////////////////////////
-#include "manager.hpp"
+#include "down_all.hpp"
 #include "settings.hpp"
 #include "util/logging.hpp"
 
@@ -39,7 +39,7 @@ int main(int argc, char* argv[])
         src::settings settings;
         read_args(argc, argv, settings);
 
-        code = src::manager(settings).run();
+        code = src::down_all(settings).run();
     }
     catch(invalid_argument& e)
     {
