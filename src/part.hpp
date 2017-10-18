@@ -15,18 +15,13 @@
 #include <atomic>
 #include <fstream>
 #include <future>
-#include <ios>
 #include <string>
-#include <tuple>
 
 #include <curl/curl.h>
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace src
 {
-
-using offset = std::streamoff;
-using range = std::tuple<offset, offset>;
 
 ////////////////////////////////////////////////////////////////////////////////
 class part : private util::logger
