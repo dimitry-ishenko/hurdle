@@ -25,7 +25,7 @@ public:
     ////////////////////
     explicit output(const settings&);
 
-    auto length() { return file_.tellp(); }
+    auto size() { return file_.tellp(); }
 
 private:
     ////////////////////
