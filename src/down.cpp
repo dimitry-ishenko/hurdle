@@ -62,6 +62,19 @@ bool down::done() const
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+offset down::speed() noexcept
+{
+    auto now = clock::now();
+    auto piece = piece_.exchange(0);
+
+    using namespace std::chrono;
+    auto value = 1000 * piece / duration_cast<milliseconds>(now - tp_).count();
+
+    tp_ = now;
+    return value;
+}
+
+////////////////////////////////////////////////////////////////////////////////
 void down::proc()
 {
     CURLcode code = CURLE_OK;
@@ -78,11 +91,14 @@ void down::proc()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-size_t down::write(void* data, size_t size, size_t n, void* self)
+size_t down::write(void* data, size_t size, size_t n, void* pvoid)
 {
-    return static_cast<src::down*>(self)->part_->write(
-        static_cast<const char*>(data), size * n
-    );
+    auto self = static_cast<down*>(pvoid);
+
+    offset total = size * n;
+    self->piece_ += n;
+
+    return self->part_->write(static_cast<const char*>(data), total);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

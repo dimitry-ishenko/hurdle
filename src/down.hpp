@@ -13,7 +13,10 @@
 #include "settings.hpp"
 #include "util/logging.hpp"
 
+#include <atomic>
+#include <chrono>
 #include <future>
+
 #include <curl/curl.h>
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -31,6 +34,8 @@ public:
     auto const& part() const noexcept { return part_; }
     bool done() const;
 
+    offset speed() noexcept;
+
 private:
     ////////////////////
     const settings& settings_;
@@ -41,7 +46,13 @@ private:
     std::future<void> future_;
     void proc();
 
-    static size_t write(void* data, size_t size, size_t n, void* self);
+    // access from another thread
+    std::atomic<offset> piece_ { 0 };
+
+    using clock = std::chrono::system_clock;
+    clock::time_point tp_ = clock::now();
+
+    static size_t write(void* data, size_t size, size_t n, void* pvoid);
 };
 
 ////////////////////////////////////////////////////////////////////////////////
