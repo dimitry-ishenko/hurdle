@@ -34,6 +34,7 @@ part::part(const src::settings& settings, int nr, offset from, offset to) :
     if(!file_) throw std::invalid_argument("Cannot open file");
 
     size_ = file_.tellp();
+    bucket_ = 0;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -52,6 +53,7 @@ offset part::write(const char* data, offset n)
     if(file_.write(data, n))
     {
         size_ = file_.tellp();
+        bucket_ += n;
         return n;
     }
     else return 0;
