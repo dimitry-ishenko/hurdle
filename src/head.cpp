@@ -13,7 +13,7 @@ namespace src
 {
 
 ////////////////////////////////////////////////////////////////////////////////
-head::head(const src::settings& settings) : util::logger("Head")
+head::head(const src::settings& settings) : util::logger("head")
 {
     handle_ = curl_easy_init();
 

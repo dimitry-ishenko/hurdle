@@ -17,7 +17,7 @@ namespace src
 
 ////////////////////////////////////////////////////////////////////////////////
 part::part(const src::settings& settings, int nr, offset from, offset to) :
-    util::logger("Part" + std::to_string(nr)),
+    util::logger("part " + std::to_string(nr)),
     nr_(nr), from_(from), to_(to), path_(settings.output)
 {
     auto from_to = std::to_string(from_) + "-" + std::to_string(to_);

@@ -17,7 +17,7 @@ namespace src
 
 ////////////////////////////////////////////////////////////////////////////////
 down::down(const src::settings& settings, shared_part part) :
-    util::logger("Down" + std::to_string(part->nr())),
+    util::logger("down " + std::to_string(part->nr())),
     settings_(settings), part_(std::move(part))
 {
     auto from = part_->from();

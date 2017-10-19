@@ -12,7 +12,7 @@ namespace src
 {
 
 ////////////////////////////////////////////////////////////////////////////////
-down_all::down_all(const src::settings& settings) : util::logger("Down"),
+down_all::down_all(const src::settings& settings) : util::logger("down"),
     settings_(settings), head_(settings), output_(settings)
 { }
 
