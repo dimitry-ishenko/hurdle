@@ -10,6 +10,7 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 #include <chrono>
+#include <cstddef>
 #include <ios>
 #include <string>
 #include <tuple>
@@ -33,7 +34,7 @@ struct settings
 
     secs read_timeout = 20s;
 
-    int retry_count = 10;
+    std::size_t retry_count = 10;
     secs retry_sleep = 3s;
 };
 

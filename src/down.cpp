@@ -65,7 +65,7 @@ bool down::done() const
 void down::proc()
 {
     CURLcode code = CURLE_OK;
-    for(auto count = 0; count < settings_.retry_count; ++count)
+    for(std::size_t count = 0; count < settings_.retry_count; ++count)
     {
         if(count) info() << "Retrying";
 
