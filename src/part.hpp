@@ -37,6 +37,8 @@ public:
     offset write(const char*, offset);
     auto size() const noexcept { return size_.load(); }
 
+    double done() const noexcept { return size_ / total_; }
+
 private:
     ////////////////////
     int nr_;
@@ -46,6 +48,7 @@ private:
     std::fstream file_;
 
     std::atomic<offset> size_;
+    double total_;
 };
 
 ////////////////////////////////////////////////////////////////////////////////

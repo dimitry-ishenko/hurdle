@@ -34,6 +34,7 @@ part::part(const src::settings& settings, int nr, offset from, offset to) :
     if(!file_) throw std::invalid_argument("Cannot open file");
 
     size_ = file_.tellp();
+    total_ = to_ - from_;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
