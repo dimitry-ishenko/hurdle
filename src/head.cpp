@@ -29,12 +29,12 @@ head::head(const src::settings& settings) : util::logger("Head")
     auto code = curl_easy_perform(handle_);
     if(code) throw std::runtime_error(curl_easy_strerror(code));
 
-    curl_off_t length;
-    code = curl_easy_getinfo(handle_, CURLINFO_CONTENT_LENGTH_DOWNLOAD_T, &length);
+    curl_off_t size;
+    code = curl_easy_getinfo(handle_, CURLINFO_CONTENT_LENGTH_DOWNLOAD_T, &size);
     if(code) throw std::runtime_error(curl_easy_strerror(code));
 
-    length_ = length;
-    info() << "length = " << length_;
+    size_ = size;
+    info() << "size = " << size_;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

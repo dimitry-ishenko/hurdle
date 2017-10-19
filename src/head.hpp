@@ -26,12 +26,12 @@ public:
     explicit head(const settings&);
     ~head() noexcept;
 
-    auto length() const noexcept { return length_; }
+    auto size() const noexcept { return size_; }
 
 private:
     ////////////////////
     CURL* handle_;
-    offset length_ = 0;
+    offset size_ = 0;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
