@@ -37,8 +37,6 @@ public:
     offset write(const char*, offset);
     auto size() const noexcept { return size_.load(); }
 
-    auto piece() noexcept { return piece_.exchange(0); }
-
 private:
     ////////////////////
     int nr_;
@@ -47,7 +45,7 @@ private:
     std::string path_;
     std::fstream file_;
 
-    std::atomic<offset> size_, piece_;
+    std::atomic<offset> size_;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
