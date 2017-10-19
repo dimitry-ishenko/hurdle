@@ -30,6 +30,9 @@ struct settings
     std::string url;
     std::string output;
 
+    std::size_t part_count = 5;
+    offset part_size = 100000000;
+
     secs read_timeout = 20s;
 
     std::size_t retry_count = 10;
