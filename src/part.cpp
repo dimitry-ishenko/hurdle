@@ -16,13 +16,11 @@ namespace src
 {
 
 ////////////////////////////////////////////////////////////////////////////////
-part::part(const src::settings& settings, int nr, src::range range) :
+part::part(const src::settings& settings, int nr, offset from, offset to) :
     util::logger("Part" + std::to_string(nr)),
-    nr_(nr), range_(std::move(range)), path_(settings.output)
+    nr_(nr), from_(from), to_(to), path_(settings.output)
 {
-    auto from = std::get<0>(range), to = std::get<1>(range);
-
-    auto from_to = std::to_string(from) + "-" + std::to_string(to);
+    auto from_to = std::to_string(from_) + "-" + std::to_string(to_);
     info() << "range = " << from_to;
 
     auto p = path_.find_last_of('.');

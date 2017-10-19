@@ -20,13 +20,13 @@ down::down(const src::settings& settings, shared_part part) :
     util::logger("Down" + std::to_string(part->nr())),
     settings_(settings), part_(std::move(part))
 {
-    auto from = std::get<0>(part_->range()), to = std::get<1>(part_->range());
+    auto from = part_->from();
     if(part_->size())
     {
         info() << "skipping " << part_->size();
         from += part_->size();
     }
-    if(from > to) throw std::invalid_argument("Invalid range");
+    if(from > part_->to()) throw std::invalid_argument("Invalid range");
 
     ////////////////////
     handle_ = curl_easy_init();
@@ -41,7 +41,7 @@ down::down(const src::settings& settings, shared_part part) :
     curl_easy_setopt(handle_, CURLOPT_LOW_SPEED_LIMIT, 1);
     curl_easy_setopt(handle_, CURLOPT_LOW_SPEED_TIME, settings_.read_timeout.count());
 
-    auto from_to = std::to_string(from) + "-" + std::to_string(to);
+    auto from_to = std::to_string(from) + "-" + std::to_string(part_->to());
     curl_easy_setopt(handle_, CURLOPT_RANGE, from_to.data());
 
     ////////////////////

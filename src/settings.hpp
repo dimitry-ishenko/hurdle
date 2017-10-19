@@ -13,7 +13,6 @@
 #include <cstddef>
 #include <ios>
 #include <string>
-#include <tuple>
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace src
@@ -24,7 +23,6 @@ using secs = std::chrono::seconds;
 using namespace std::chrono_literals;
 
 using offset = std::streamoff;
-using range = std::tuple<offset, offset>;
 
 ////////////////////////////////////////////////////////////////////////////////
 struct settings

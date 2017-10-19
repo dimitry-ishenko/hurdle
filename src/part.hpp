@@ -26,11 +26,12 @@ class part : private util::logger
 {
 public:
     ////////////////////
-    part(const settings&, int nr, src::range);
+    part(const settings&, int nr, offset from, offset to);
     ~part() noexcept;
 
     auto nr() const noexcept { return nr_; }
-    auto const& range() const noexcept { return range_; }
+    auto from() const noexcept { return from_; }
+    auto to() const noexcept { return to_; }
 
     // called from another thread
     offset write(const char*, offset);
@@ -39,12 +40,12 @@ public:
 private:
     ////////////////////
     int nr_;
-    src::range range_;
+    offset from_, to_;
 
     std::string path_;
     std::fstream file_;
 
-    std::atomic<offset> size_ { 0 };
+    std::atomic<offset> size_;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
