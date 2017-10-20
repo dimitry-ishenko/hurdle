@@ -47,6 +47,8 @@ public:
         swap(handle_, rhs.handle_);
         swap(future_, rhs.future_);
         swap(part_  , rhs.part_  );
+        size_ = rhs.size_.exchange(size_);
+        swap(total_ , rhs.total_ );
         piece_ = rhs.piece_.exchange(piece_);
         swap(tp_    , rhs.tp_    );
     }
@@ -54,6 +56,9 @@ public:
     ////////////////////
     bool ready() const { return future_.wait_for(secs(0)) == std::future_status::ready; }
     part get() { return future_.get(); }
+
+    offset size() const noexcept { return size_; }
+    double done() const noexcept { return size() / total_; }
 
     offset speed() noexcept;
 
@@ -65,6 +70,9 @@ private:
     part read(int nr, offset from, offset to);
 
     part part_;
+    std::atomic<offset> size_;
+    double total_;
+
     std::atomic<offset> piece_ { 0 };
 
     using clock = std::chrono::system_clock;

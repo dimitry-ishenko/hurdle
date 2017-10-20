@@ -17,7 +17,8 @@ namespace src
 
 ////////////////////////////////////////////////////////////////////////////////
 down::down(int nr, offset from, offset to) :
-    util::logger("down " + std::to_string(nr))
+    util::logger("down " + std::to_string(nr)),
+    total_(to - from + 1)
 {
     auto ctx = context::instance();
     handle_ = curl_easy_init();
@@ -79,6 +80,8 @@ part down::read(int nr, offset from, offset to)
         }
         if(start > to) throw std::invalid_argument("Invalid range");
 
+        size_ = part_.size();
+
         ////////////////////
         auto range = std::to_string(start) + "-" + std::to_string(to);
         curl_easy_setopt(handle_, CURLOPT_RANGE, range.data());
@@ -99,6 +102,7 @@ size_t down::write(void* data, size_t size, size_t n, void* pvoid)
     auto self = static_cast<down*>(pvoid);
 
     offset total = size * n;
+    self->size_ += n;
     self->piece_ += n;
 
     return self->part_.write(static_cast<const char*>(data), total);
