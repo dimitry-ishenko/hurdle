@@ -32,7 +32,7 @@ part::part(const src::settings& settings, int nr, offset from, offset to) :
     info() << "opening file " << path_;
     using std::ios_base;
     file_.open(path_, ios_base::out | ios_base::app | ios_base::binary);
-    if(!file_) throw std::invalid_argument("Cannot open file");
+    if(!file_) throw std::runtime_error("Part open failed");
 
     size_ = file_.tellp();
     total_ = to_ - from_;
