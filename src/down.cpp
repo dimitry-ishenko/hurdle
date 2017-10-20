@@ -16,18 +16,9 @@ namespace src
 {
 
 ////////////////////////////////////////////////////////////////////////////////
-down::down(src::part& part) : util::logger("down " + std::to_string(part.nr())),
-    part_(part)
+down::down(int nr, offset from, offset to) :
+    util::logger("down " + std::to_string(nr))
 {
-    auto from = part_.from();
-    if(part_.size())
-    {
-        info() << "skipping " << part_.size();
-        from += part_.size();
-    }
-    if(from > part_.to()) throw std::invalid_argument("Invalid range");
-
-    ////////////////////
     auto ctx = context::instance();
     handle_ = curl_easy_init();
 
@@ -41,12 +32,9 @@ down::down(src::part& part) : util::logger("down " + std::to_string(part.nr())),
     curl_easy_setopt(handle_, CURLOPT_LOW_SPEED_LIMIT, 1);
     curl_easy_setopt(handle_, CURLOPT_LOW_SPEED_TIME, ctx->read_timeout.count());
 
-    auto from_to = std::to_string(from) + "-" + std::to_string(part_.to());
-    curl_easy_setopt(handle_, CURLOPT_RANGE, from_to.data());
-
     ////////////////////
     tp_ = clock::now();
-    future_ = std::async(std::launch::async, &down::read, this);
+    future_ = std::async(std::launch::async, &down::read, this, nr, from, to);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -57,25 +45,21 @@ down::~down() noexcept
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-bool down::done() const { return future_.wait_for(secs(0)) == std::future_status::ready; }
-
-////////////////////////////////////////////////////////////////////////////////
 offset down::speed() noexcept
 {
-    using namespace std::chrono;
+    using msec = std::chrono::milliseconds;
 
     auto val = clock::now() - tp_;
-    if(val < 1ms) return 0;
+    if(val < msec(1)) return 0;
 
     auto piece = piece_.exchange(0);
-    auto value = 1000 * piece / duration_cast<milliseconds>(val).count();
-
     tp_ += val;
-    return value;
+
+    return 1000 * piece / std::chrono::duration_cast<msec>(val).count();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void down::read()
+part down::read(int nr, offset from, offset to)
 {
     auto ctx = context::instance();
 
@@ -84,12 +68,29 @@ void down::read()
     {
         if(count) info() << "Retrying";
 
-        code = curl_easy_perform(handle_);
-        if(code == CURLE_OK) break;
+        ////////////////////
+        part_ = part(nr, from, to);
 
+        auto start = from;
+        if(part_.size())
+        {
+            info() << "skipping " << part_.size();
+            start += part_.size();
+        }
+        if(start > to) throw std::invalid_argument("Invalid range");
+
+        ////////////////////
+        auto range = std::to_string(start) + "-" + std::to_string(to);
+        curl_easy_setopt(handle_, CURLOPT_RANGE, range.data());
+
+        code = curl_easy_perform(handle_);
+        if(code == CURLE_OK) return std::move(part_);
+
+        ////////////////////
         std::this_thread::sleep_for(ctx->retry_sleep);
     }
-    if(code != CURLE_OK) throw std::runtime_error(curl_easy_strerror(code));
+
+    throw std::runtime_error(curl_easy_strerror(code));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

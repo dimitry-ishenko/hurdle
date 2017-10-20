@@ -30,7 +30,7 @@ class down : private util::logger
 public:
     ////////////////////
     down() = default;
-    explicit down(part&);
+    down(int nr, offset from, offset to);
     ~down() noexcept;
 
     down(const down&) = delete;
@@ -45,26 +45,26 @@ public:
 
         using std::swap;
         swap(handle_, rhs.handle_);
-        swap(part_  , rhs.part_  );
         swap(future_, rhs.future_);
+        swap(part_  , rhs.part_  );
         piece_ = rhs.piece_.exchange(piece_);
         swap(tp_    , rhs.tp_    );
     }
 
     ////////////////////
-    bool done() const;
+    bool ready() const { return future_.wait_for(secs(0)) == std::future_status::ready; }
+    part get() { return future_.get(); }
+
     offset speed() noexcept;
 
 private:
     ////////////////////
     CURL* handle_ = nullptr;
 
-    static part none_;
-    part& part_ = none_;
+    std::future<part> future_;
+    part read(int nr, offset from, offset to);
 
-    std::future<void> future_;
-    void read();
-
+    part part_;
     std::atomic<offset> piece_ { 0 };
 
     using clock = std::chrono::system_clock;
