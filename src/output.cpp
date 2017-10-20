@@ -19,7 +19,7 @@ output::output(const src::settings& settings) : util::logger("out")
     using std::ios_base;
     file_.open(settings.output, ios_base::out | ios_base::app | ios_base::binary);
 
-    if(!file_) throw std::runtime_error("Cannot open file");
+    if(!file_) throw std::runtime_error("Output open failed");
 }
 
 ////////////////////////////////////////////////////////////////////////////////
