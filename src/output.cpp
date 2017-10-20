@@ -18,10 +18,36 @@ output::output() : util::logger("out")
     auto ctx = context::instance();
 
     info() << "opening file " << ctx->output;
-    using std::ios_base;
-    file_.open(ctx->output, ios_base::out | ios_base::app | ios_base::binary);
-
+    file_.open(ctx->output, file_.out | file_.app | file_.binary);
     if(!file_) throw std::runtime_error("Output open failed");
+
+    info() << "size = " << size();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void output::merge(src::part part)
+{
+    parts_.emplace(part.nr(), std::move(part));
+
+    while(parts_.begin() != parts_.end())
+    {
+        src::part& part = std::get<1>(*parts_.begin());
+        if(part.from() == size())
+        {
+            info() << "merging part " << part.nr();
+
+            auto store = part.read_all();
+            file_.write(store.data(), store.size());
+            if(!file_) throw std::runtime_error("Failed to write part data");
+
+            info() << "size = " << size();
+
+            part.remove();
+            parts_.erase(parts_.begin());
+        }
+        else if(part.from() > size()) break;
+        else throw std::invalid_argument("Invalid part");
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
