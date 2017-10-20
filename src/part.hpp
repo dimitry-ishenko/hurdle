@@ -55,11 +55,11 @@ public:
     auto from() const noexcept { return from_; }
     auto to() const noexcept { return to_; }
 
-    // may be called from another thread
-    offset write(const char*, offset);
     auto size() const noexcept { return size_.load(); }
+    double ratio() const noexcept { return size() / total_; }
 
-    double done() const noexcept { return size_ / total_; }
+    ////////////////////
+    offset write(const char*, offset);
 
     void merge_to(std::fstream&);
     void remove() noexcept;

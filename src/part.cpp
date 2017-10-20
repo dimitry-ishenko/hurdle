@@ -34,7 +34,7 @@ part::part(int nr, offset from, offset to) : util::logger("part " + std::to_stri
     if(!file_) throw std::runtime_error("Failed to open part file");
 
     size_ = file_.tellp();
-    total_ = to_ - from_;
+    total_ = to_ - from_ + 1;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
