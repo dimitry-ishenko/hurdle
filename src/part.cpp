@@ -29,8 +29,7 @@ part::part(int nr, offset from, offset to) : util::logger("part " + std::to_stri
     path_.insert(p, "_" + from_to);
 
     info() << "opening file " << path_;
-    using std::ios_base;
-    file_.open(path_, ios_base::out | ios_base::app | ios_base::binary);
+    file_.open(path_, file_.out | file_.app | file_.binary);
     if(!file_) throw std::runtime_error("Failed to open part file");
 
     size_ = file_.tellp();
@@ -59,16 +58,15 @@ offset part::write(const char* data, offset n)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void part::merge_to(std::fstream& file)
+std::vector<char> part::read_all()
 {
-    std::unique_ptr<char[]> store(new char[size_]);
+    std::vector<char> store(size_);
 
-    file_.seekg(0, std::ios_base::beg);
-    file_.read(store.get(), size_);
+    file_.seekg(0, file_.beg);
+    file_.read(store.data(), store.size());
     if(!file_) throw std::runtime_error("Failed to read part data");
 
-    file.write(store.get(), size_);
-    if(!file) throw std::runtime_error("Failed to write part data");
+    return store;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

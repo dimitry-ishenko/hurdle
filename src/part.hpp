@@ -16,6 +16,7 @@
 #include <fstream>
 #include <string>
 #include <utility>
+#include <vector>
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace src
@@ -60,8 +61,8 @@ public:
 
     ////////////////////
     offset write(const char*, offset);
+    std::vector<char> read_all();
 
-    void merge_to(std::fstream&);
     void remove() noexcept;
 
 private:
