@@ -16,17 +16,16 @@ namespace src
 {
 
 ////////////////////////////////////////////////////////////////////////////////
-down::down(shared_part part) :
-    util::logger("down " + std::to_string(part->nr())),
-    part_(std::move(part))
+down::down(src::part& part) : util::logger("down " + std::to_string(part.nr())),
+    part_(part)
 {
-    auto from = part_->from();
-    if(part_->size())
+    auto from = part_.from();
+    if(part_.size())
     {
-        info() << "skipping " << part_->size();
-        from += part_->size();
+        info() << "skipping " << part_.size();
+        from += part_.size();
     }
-    if(from > part_->to()) throw std::invalid_argument("Invalid range");
+    if(from > part_.to()) throw std::invalid_argument("Invalid range");
 
     ////////////////////
     auto ctx = context::instance();
@@ -42,43 +41,41 @@ down::down(shared_part part) :
     curl_easy_setopt(handle_, CURLOPT_LOW_SPEED_LIMIT, 1);
     curl_easy_setopt(handle_, CURLOPT_LOW_SPEED_TIME, ctx->read_timeout.count());
 
-    auto from_to = std::to_string(from) + "-" + std::to_string(part_->to());
+    auto from_to = std::to_string(from) + "-" + std::to_string(part_.to());
     curl_easy_setopt(handle_, CURLOPT_RANGE, from_to.data());
 
     ////////////////////
-    future_ = std::async(std::launch::async, &down::proc, this);
+    tp_ = clock::now();
+    future_ = std::async(std::launch::async, &down::read, this);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 down::~down() noexcept
 {
-    future_.wait();
-    curl_easy_cleanup(handle_);
+    if(future_.valid()) future_.wait();
+    if(handle_) curl_easy_cleanup(handle_);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-bool down::done() const
-{
-    return future_.wait_for(secs(0)) == std::future_status::ready;
-}
+bool down::done() const { return future_.wait_for(secs(0)) == std::future_status::ready; }
 
 ////////////////////////////////////////////////////////////////////////////////
 offset down::speed() noexcept
 {
     using namespace std::chrono;
 
-    auto interval = clock::now() - tp_;
-    if(interval < 1ms) return 0;
+    auto val = clock::now() - tp_;
+    if(val < 1ms) return 0;
 
     auto piece = piece_.exchange(0);
-    auto value = 1000 * piece / duration_cast<milliseconds>(interval).count();
+    auto value = 1000 * piece / duration_cast<milliseconds>(val).count();
 
-    tp_ += interval;
+    tp_ += val;
     return value;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void down::proc()
+void down::read()
 {
     auto ctx = context::instance();
 
@@ -103,7 +100,7 @@ size_t down::write(void* data, size_t size, size_t n, void* pvoid)
     offset total = size * n;
     self->piece_ += n;
 
-    return self->part_->write(static_cast<const char*>(data), total);
+    return self->part_.write(static_cast<const char*>(data), total);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

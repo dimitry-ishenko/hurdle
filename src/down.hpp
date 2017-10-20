@@ -16,7 +16,7 @@
 #include <atomic>
 #include <chrono>
 #include <future>
-#include <memory>
+#include <utility>
 
 #include <curl/curl.h>
 
@@ -25,36 +25,50 @@ namespace src
 {
 
 ////////////////////////////////////////////////////////////////////////////////
-using shared_part = std::shared_ptr<part>;
-
-////////////////////////////////////////////////////////////////////////////////
 class down : private util::logger
 {
 public:
     ////////////////////
-    explicit down(shared_part);
+    down() = default;
+    explicit down(part&);
     ~down() noexcept;
 
-    ////////////////////
-    auto const& part() const noexcept { return part_; }
-    bool done() const;
+    down(const down&) = delete;
+    down(down&& rhs) noexcept { swap(rhs); }
 
+    down& operator=(const down&) = delete;
+    down& operator=(down&& rhs) noexcept { swap(rhs); return *this; }
+
+    void swap(down& rhs) noexcept
+    {
+        util::logger::operator=(std::move(rhs));
+
+        using std::swap;
+        swap(handle_, rhs.handle_);
+        swap(part_  , rhs.part_  );
+        swap(future_, rhs.future_);
+        piece_ = rhs.piece_.exchange(piece_);
+        swap(tp_    , rhs.tp_    );
+    }
+
+    ////////////////////
+    bool done() const;
     offset speed() noexcept;
 
 private:
     ////////////////////
-    CURL* handle_;
+    CURL* handle_ = nullptr;
 
-    shared_part part_;
+    static part none_;
+    part& part_ = none_;
 
     std::future<void> future_;
-    void proc();
+    void read();
 
-    // access from another thread
     std::atomic<offset> piece_ { 0 };
 
     using clock = std::chrono::system_clock;
-    clock::time_point tp_ = clock::now();
+    clock::time_point tp_;
 
     static size_t write(void* data, size_t size, size_t n, void* pvoid);
 };
