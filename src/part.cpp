@@ -8,6 +8,7 @@
 #include "part.hpp"
 
 #include <cstdio>
+#include <memory>
 #include <stdexcept>
 #include <utility>
 
@@ -56,6 +57,19 @@ offset part::write(const char* data, offset n)
         return n;
     }
     else return 0;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void part::merge_to(std::fstream& file)
+{
+    std::unique_ptr<char[]> store(new char[size_]);
+
+    file_.seekg(0, std::ios_base::beg);
+    file_.read(store.get(), size_);
+    if(!file_) throw std::runtime_error("Read failed");
+
+    file.write(store.get(), size_);
+    if(!file) throw std::runtime_error("Write failed");
 }
 
 ////////////////////////////////////////////////////////////////////////////////
