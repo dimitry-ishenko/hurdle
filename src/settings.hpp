@@ -20,8 +20,6 @@ namespace src
 
 ////////////////////////////////////////////////////////////////////////////////
 using secs = std::chrono::seconds;
-using namespace std::chrono_literals;
-
 using offset = std::streamoff;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -33,10 +31,10 @@ struct settings
     std::size_t part_count = 5;
     offset part_size = 100000000;
 
-    secs read_timeout = 20s;
+    secs read_timeout { 20 };
 
     std::size_t retry_count = 10;
-    secs retry_sleep = 3s;
+    secs retry_sleep { 3 };
 };
 
 ////////////////////////////////////////////////////////////////////////////////
