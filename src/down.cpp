@@ -71,6 +71,11 @@ part down::read(int nr, offset from, offset to)
 
         ////////////////////
         part_ = part(nr, from, to);
+        if(to - from + 1 == part_.size())
+        {
+            info() << "already done";
+            return std::move(part_);
+        }
 
         auto start = from;
         if(part_.size())
