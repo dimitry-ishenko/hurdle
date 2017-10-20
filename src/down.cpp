@@ -64,13 +64,15 @@ bool down::done() const
 ////////////////////////////////////////////////////////////////////////////////
 offset down::speed() noexcept
 {
-    auto now = clock::now();
-    auto piece = piece_.exchange(0);
-
     using namespace std::chrono;
-    auto value = 1000 * piece / duration_cast<milliseconds>(now - tp_).count();
 
-    tp_ = now;
+    auto interval = clock::now() - tp_;
+    if(interval < 1ms) return 0;
+
+    auto piece = piece_.exchange(0);
+    auto value = 1000 * piece / duration_cast<milliseconds>(interval).count();
+
+    tp_ += interval;
     return value;
 }
 
