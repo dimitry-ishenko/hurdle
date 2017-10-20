@@ -10,7 +10,7 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 #include "part.hpp"
-#include "settings.hpp"
+#include "context.hpp"
 #include "util/logging.hpp"
 
 #include <atomic>
@@ -28,7 +28,7 @@ class down : private util::logger
 {
 public:
     ////////////////////
-    explicit down(const settings&, shared_part);
+    explicit down(const context&, shared_part);
     ~down() noexcept;
 
     auto const& part() const noexcept { return part_; }
@@ -38,7 +38,7 @@ public:
 
 private:
     ////////////////////
-    const settings& settings_;
+    const context& settings_;
     CURL* handle_;
 
     shared_part part_;

@@ -9,7 +9,7 @@
 #define SRC_HEAD_HPP
 
 ////////////////////////////////////////////////////////////////////////////////
-#include "settings.hpp"
+#include "context.hpp"
 #include "util/logging.hpp"
 
 #include <curl/curl.h>
@@ -23,7 +23,7 @@ class head : private util::logger
 {
 public:
     ////////////////////
-    explicit head(const settings&);
+    explicit head(const context&);
     ~head() noexcept;
 
     auto size() const noexcept { return size_; }

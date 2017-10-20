@@ -5,8 +5,8 @@
 // Distributed under the GNU GPL license. See the LICENSE.md file for details.
 
 ////////////////////////////////////////////////////////////////////////////////
-#ifndef SRC_SETTINGS_HPP
-#define SRC_SETTINGS_HPP
+#ifndef SRC_CONTEXT_HPP
+#define SRC_CONTEXT_HPP
 
 ////////////////////////////////////////////////////////////////////////////////
 #include <chrono>
@@ -23,7 +23,7 @@ using secs = std::chrono::seconds;
 using offset = std::streamoff;
 
 ////////////////////////////////////////////////////////////////////////////////
-struct settings
+struct context
 {
     std::string url;
     std::string output;

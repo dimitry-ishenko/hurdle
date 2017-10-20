@@ -13,7 +13,7 @@ namespace src
 {
 
 ////////////////////////////////////////////////////////////////////////////////
-output::output(const src::settings& settings) : util::logger("out")
+output::output(const src::context& settings) : util::logger("out")
 {
     info() << "opening file " << settings.output;
     using std::ios_base;

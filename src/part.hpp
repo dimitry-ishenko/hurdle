@@ -9,7 +9,7 @@
 #define SRC_PART_HPP
 
 ////////////////////////////////////////////////////////////////////////////////
-#include "settings.hpp"
+#include "context.hpp"
 #include "util/logging.hpp"
 
 #include <atomic>
@@ -26,7 +26,7 @@ class part : private util::logger
 {
 public:
     ////////////////////
-    part(const settings&, int nr, offset from, offset to);
+    part(const context&, int nr, offset from, offset to);
     ~part() noexcept;
 
     auto nr() const noexcept { return nr_; }

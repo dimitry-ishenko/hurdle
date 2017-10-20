@@ -9,7 +9,7 @@
 #define SRC_OUTPUT_HPP
 
 ////////////////////////////////////////////////////////////////////////////////
-#include "settings.hpp"
+#include "context.hpp"
 #include "util/logging.hpp"
 
 #include <fstream>
@@ -23,7 +23,7 @@ class output : private util::logger
 {
 public:
     ////////////////////
-    explicit output(const settings&);
+    explicit output(const context&);
 
     auto size() { return file_.tellp(); }
 

@@ -16,7 +16,7 @@ namespace src
 {
 
 ////////////////////////////////////////////////////////////////////////////////
-down::down(const src::settings& settings, shared_part part) :
+down::down(const src::context& settings, shared_part part) :
     util::logger("down " + std::to_string(part->nr())),
     settings_(settings), part_(std::move(part))
 {

@@ -6,7 +6,7 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 #include "down_all.hpp"
-#include "settings.hpp"
+#include "context.hpp"
 #include "util/logging.hpp"
 
 #include <iostream>
@@ -24,7 +24,7 @@ struct invalid_argument : public std::invalid_argument
 
 struct need_to_exit : public std::exception { };
 
-void read_args(int argc, char* argv[], src::settings&);
+void read_args(int argc, char* argv[], src::context&);
 void version(const char*);
 void usage(const char*);
 
@@ -36,7 +36,7 @@ int main(int argc, char* argv[])
 
     try
     {
-        src::settings settings;
+        src::context settings;
         read_args(argc, argv, settings);
 
         code = src::down_all(settings).run();
@@ -64,7 +64,7 @@ int main(int argc, char* argv[])
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void read_args(int argc, char* argv[], src::settings& settings)
+void read_args(int argc, char* argv[], src::context& settings)
 {
     for(int i = 1; i < argc; ++i)
     {

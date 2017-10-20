@@ -13,7 +13,7 @@
 #include "head.hpp"
 #include "output.hpp"
 #include "part.hpp"
-#include "settings.hpp"
+#include "context.hpp"
 #include "util/logging.hpp"
 
 #include <map>
@@ -27,13 +27,13 @@ class down_all : private util::logger
 {
 public:
     ////////////////////
-    explicit down_all(const settings&);
+    explicit down_all(const context&);
 
     int run();
 
 private:
     ////////////////////
-    const settings& settings_;
+    const context& settings_;
     head head_;
     output output_;
 
