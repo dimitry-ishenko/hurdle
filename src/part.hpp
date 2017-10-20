@@ -12,7 +12,6 @@
 #include "context.hpp"
 #include "util/logging.hpp"
 
-#include <atomic>
 #include <fstream>
 #include <string>
 #include <utility>
@@ -47,8 +46,6 @@ public:
         swap(to_   , rhs.to_   );
         swap(path_ , rhs.path_ );
         swap(file_ , rhs.file_ );
-        size_ = rhs.size_.exchange(size_);
-        swap(total_, rhs.total_);
     }
 
     ////////////////////
@@ -56,8 +53,7 @@ public:
     auto from() const noexcept { return from_; }
     auto to() const noexcept { return to_; }
 
-    auto size() const noexcept { return size_.load(); }
-    double ratio() const noexcept { return size() / total_; }
+    offset size() noexcept { return file_.tellp(); }
 
     ////////////////////
     offset write(const char*, offset);
@@ -71,9 +67,6 @@ private:
 
     std::string path_;
     std::fstream file_;
-
-    std::atomic<offset> size_;
-    double total_;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
