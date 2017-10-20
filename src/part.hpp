@@ -40,6 +40,7 @@ public:
     double done() const noexcept { return size_ / total_; }
 
     void merge_to(std::fstream&);
+    void remove() noexcept;
 
 private:
     ////////////////////

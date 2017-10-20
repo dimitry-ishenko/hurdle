@@ -43,9 +43,6 @@ part::~part() noexcept
 {
     info() << "closing file";
     file_.close();
-
-    info() << "removing file";
-    std::remove(path_.data());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -70,6 +67,13 @@ void part::merge_to(std::fstream& file)
 
     file.write(store.get(), size_);
     if(!file) throw std::runtime_error("Write failed");
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void part::remove() noexcept
+{
+    info() << "removing file";
+    if(std::remove(path_.data())) err() << "Remove failed";
 }
 
 ////////////////////////////////////////////////////////////////////////////////
