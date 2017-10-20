@@ -14,7 +14,6 @@
 
 #include <atomic>
 #include <fstream>
-#include <memory>
 #include <string>
 #include <utility>
 
@@ -75,9 +74,6 @@ private:
     std::atomic<offset> size_;
     double total_;
 };
-
-////////////////////////////////////////////////////////////////////////////////
-using shared_part = std::shared_ptr<part>;
 
 ////////////////////////////////////////////////////////////////////////////////
 }
