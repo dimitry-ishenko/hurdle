@@ -16,6 +16,7 @@
 #include <fstream>
 #include <memory>
 #include <string>
+#include <utility>
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace src
@@ -26,15 +27,36 @@ class part : private util::logger
 {
 public:
     ////////////////////
+    part() = default;
     part(int nr, offset from, offset to);
     ~part() noexcept;
+
+    part(const part&) = delete;
+    part(part&& rhs) noexcept { swap(rhs); }
+
+    part& operator=(const part&) = delete;
+    part& operator=(part&& rhs) noexcept { swap(rhs); return *this; }
+
+    void swap(part& rhs) noexcept
+    {
+        util::logger::operator=(std::move(rhs));
+
+        using std::swap;
+        swap(nr_   , rhs.nr_   );
+        swap(from_ , rhs.from_ );
+        swap(to_   , rhs.to_   );
+        swap(path_ , rhs.path_ );
+        swap(file_ , rhs.file_ );
+        size_ = rhs.size_.exchange(size_);
+        swap(total_, rhs.total_);
+    }
 
     ////////////////////
     auto nr() const noexcept { return nr_; }
     auto from() const noexcept { return from_; }
     auto to() const noexcept { return to_; }
 
-    // called from another thread
+    // may be called from another thread
     offset write(const char*, offset);
     auto size() const noexcept { return size_.load(); }
 
@@ -45,8 +67,7 @@ public:
 
 private:
     ////////////////////
-    int nr_;
-    offset from_, to_;
+    int nr_; offset from_, to_;
 
     std::string path_;
     std::fstream file_;

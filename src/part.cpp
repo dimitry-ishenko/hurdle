@@ -17,22 +17,21 @@ namespace src
 {
 
 ////////////////////////////////////////////////////////////////////////////////
-part::part(int nr, offset from, offset to) :
-    util::logger("part " + std::to_string(nr)),
-    nr_(nr), from_(from), to_(to), path_(context::instance()->output)
+part::part(int nr, offset from, offset to) : util::logger("part " + std::to_string(nr)),
+    nr_(nr), from_(from), to_(to)
 {
     auto from_to = std::to_string(from_) + "-" + std::to_string(to_);
     info() << "range = " << from_to;
 
+    path_ = context::instance()->output;
     auto p = path_.find_last_of('.');
     if(p == std::string::npos) p = path_.size();
     path_.insert(p, "_" + from_to);
 
-    ////////////////////
     info() << "opening file " << path_;
     using std::ios_base;
     file_.open(path_, ios_base::out | ios_base::app | ios_base::binary);
-    if(!file_) throw std::runtime_error("Part open failed");
+    if(!file_) throw std::runtime_error("Failed to open part file");
 
     size_ = file_.tellp();
     total_ = to_ - from_;
@@ -41,8 +40,11 @@ part::part(int nr, offset from, offset to) :
 ////////////////////////////////////////////////////////////////////////////////
 part::~part() noexcept
 {
-    info() << "closing file";
-    file_.close();
+    if(file_.is_open())
+    {
+        info() << "closing file";
+        file_.close();
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -63,17 +65,17 @@ void part::merge_to(std::fstream& file)
 
     file_.seekg(0, std::ios_base::beg);
     file_.read(store.get(), size_);
-    if(!file_) throw std::runtime_error("Read failed");
+    if(!file_) throw std::runtime_error("Failed to read part data");
 
     file.write(store.get(), size_);
-    if(!file) throw std::runtime_error("Write failed");
+    if(!file) throw std::runtime_error("Failed to write part data");
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 void part::remove() noexcept
 {
     info() << "removing file";
-    if(std::remove(path_.data())) err() << "Remove failed";
+    if(std::remove(path_.data())) err() << "Failed to remove file";
 }
 
 ////////////////////////////////////////////////////////////////////////////////
