@@ -13,17 +13,18 @@ namespace src
 {
 
 ////////////////////////////////////////////////////////////////////////////////
-head::head(const src::context& settings) : util::logger("head")
+head::head() : util::logger("head")
 {
+    auto ctx = context::instance();
     handle_ = curl_easy_init();
 
-    info() << "url = " << settings.url;
-    curl_easy_setopt(handle_, CURLOPT_URL, settings.url.data());
+    info() << "url = " << ctx->url;
+    curl_easy_setopt(handle_, CURLOPT_URL, ctx->url.data());
     curl_easy_setopt(handle_, CURLOPT_NOBODY, true);
     curl_easy_setopt(handle_, CURLOPT_FAILONERROR, true);
 
-    curl_easy_setopt(handle_, CURLOPT_CONNECTTIMEOUT, settings.read_timeout.count());
-    curl_easy_setopt(handle_, CURLOPT_TIMEOUT, settings.read_timeout.count());
+    curl_easy_setopt(handle_, CURLOPT_CONNECTTIMEOUT, ctx->read_timeout.count());
+    curl_easy_setopt(handle_, CURLOPT_TIMEOUT, ctx->read_timeout.count());
 
     ////////////////////
     auto code = curl_easy_perform(handle_);

@@ -5,8 +5,8 @@
 // Distributed under the GNU GPL license. See the LICENSE.md file for details.
 
 ////////////////////////////////////////////////////////////////////////////////
-#include "down_all.hpp"
 #include "context.hpp"
+#include "down_all.hpp"
 #include "util/logging.hpp"
 
 #include <iostream>
@@ -24,7 +24,7 @@ struct invalid_argument : public std::invalid_argument
 
 struct need_to_exit : public std::exception { };
 
-void read_args(int argc, char* argv[], src::context&);
+void read_args(int argc, char* argv[]);
 void version(const char*);
 void usage(const char*);
 
@@ -36,10 +36,9 @@ int main(int argc, char* argv[])
 
     try
     {
-        src::context settings;
-        read_args(argc, argv, settings);
+        read_args(argc, argv);
 
-        code = src::down_all(settings).run();
+        code = src::down_all().run();
     }
     catch(invalid_argument& e)
     {
@@ -64,8 +63,10 @@ int main(int argc, char* argv[])
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void read_args(int argc, char* argv[], src::context& settings)
+void read_args(int argc, char* argv[])
 {
+    auto ctx = src::context::instance();
+
     for(int i = 1; i < argc; ++i)
     {
         std::string arg = argv[i];
@@ -76,31 +77,31 @@ void read_args(int argc, char* argv[], src::context& settings)
         else if(arg == "-q" || arg == "--quiet"  ) util::send_to_console(false);
         else if(arg == "-o" || arg == "--output" )
         {
-            if(i + 1 < argc) settings.output = argv[++i];
+            if(i + 1 < argc) ctx->output = argv[++i];
             else throw invalid_argument("Missing output path");
         }
         else if(0 == arg.compare(0, 9, "--output="))
         {
-            if(arg.size() > 9) settings.output = arg.substr(9);
+            if(arg.size() > 9) ctx->output = arg.substr(9);
             else throw invalid_argument("Missing output path");
         }
-        else if(arg[0] != '-') settings.url = arg;
+        else if(arg[0] != '-') ctx->url = arg;
         else throw invalid_argument("Invalid argument: " + arg);
     }
 
 
     ////////////////////
-    if(settings.url.empty()) throw invalid_argument("Missing url");
+    if(ctx->url.empty()) throw invalid_argument("Missing url");
 
-    if(settings.output.empty())
+    if(ctx->output.empty())
     {
-        settings.output = settings.url;
+        ctx->output = ctx->url;
 
-        auto p = settings.output.find_first_of('?');
-        if(p != std::string::npos) settings.output.resize(p);
+        auto p = ctx->output.find_first_of('?');
+        if(p != std::string::npos) ctx->output.resize(p);
 
-        p = settings.output.find_last_of('/');
-        if(p != std::string::npos) settings.output.erase(0, p + 1);
+        p = ctx->output.find_last_of('/');
+        if(p != std::string::npos) ctx->output.erase(0, p + 1);
     }
 }
 

@@ -16,9 +16,9 @@ namespace src
 {
 
 ////////////////////////////////////////////////////////////////////////////////
-down::down(const src::context& settings, shared_part part) :
+down::down(shared_part part) :
     util::logger("down " + std::to_string(part->nr())),
-    settings_(settings), part_(std::move(part))
+    part_(std::move(part))
 {
     auto from = part_->from();
     if(part_->size())
@@ -29,17 +29,18 @@ down::down(const src::context& settings, shared_part part) :
     if(from > part_->to()) throw std::invalid_argument("Invalid range");
 
     ////////////////////
+    auto ctx = context::instance();
     handle_ = curl_easy_init();
 
-    curl_easy_setopt(handle_, CURLOPT_URL, settings_.url.data());
+    curl_easy_setopt(handle_, CURLOPT_URL, ctx->url.data());
     curl_easy_setopt(handle_, CURLOPT_FAILONERROR, true);
 
     curl_easy_setopt(handle_, CURLOPT_WRITEFUNCTION, &down::write);
     curl_easy_setopt(handle_, CURLOPT_WRITEDATA, this);
 
-    curl_easy_setopt(handle_, CURLOPT_CONNECTTIMEOUT, settings_.read_timeout.count());
+    curl_easy_setopt(handle_, CURLOPT_CONNECTTIMEOUT, ctx->read_timeout.count());
     curl_easy_setopt(handle_, CURLOPT_LOW_SPEED_LIMIT, 1);
-    curl_easy_setopt(handle_, CURLOPT_LOW_SPEED_TIME, settings_.read_timeout.count());
+    curl_easy_setopt(handle_, CURLOPT_LOW_SPEED_TIME, ctx->read_timeout.count());
 
     auto from_to = std::to_string(from) + "-" + std::to_string(part_->to());
     curl_easy_setopt(handle_, CURLOPT_RANGE, from_to.data());
@@ -79,15 +80,17 @@ offset down::speed() noexcept
 ////////////////////////////////////////////////////////////////////////////////
 void down::proc()
 {
+    auto ctx = context::instance();
+
     CURLcode code = CURLE_OK;
-    for(std::size_t count = 0; count < settings_.retry_count; ++count)
+    for(std::size_t count = 0; count < ctx->retry_count; ++count)
     {
         if(count) info() << "Retrying";
 
         code = curl_easy_perform(handle_);
         if(code == CURLE_OK) break;
 
-        std::this_thread::sleep_for(settings_.retry_sleep);
+        std::this_thread::sleep_for(ctx->retry_sleep);
     }
     if(code != CURLE_OK) throw std::runtime_error(curl_easy_strerror(code));
 }

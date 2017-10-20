@@ -26,9 +26,10 @@ class part : private util::logger
 {
 public:
     ////////////////////
-    part(const context&, int nr, offset from, offset to);
+    part(int nr, offset from, offset to);
     ~part() noexcept;
 
+    ////////////////////
     auto nr() const noexcept { return nr_; }
     auto from() const noexcept { return from_; }
     auto to() const noexcept { return to_; }

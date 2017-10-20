@@ -9,8 +9,8 @@
 #define SRC_DOWN_HPP
 
 ////////////////////////////////////////////////////////////////////////////////
-#include "part.hpp"
 #include "context.hpp"
+#include "part.hpp"
 #include "util/logging.hpp"
 
 #include <atomic>
@@ -28,9 +28,10 @@ class down : private util::logger
 {
 public:
     ////////////////////
-    explicit down(const context&, shared_part);
+    explicit down(shared_part);
     ~down() noexcept;
 
+    ////////////////////
     auto const& part() const noexcept { return part_; }
     bool done() const;
 
@@ -38,7 +39,6 @@ public:
 
 private:
     ////////////////////
-    const context& settings_;
     CURL* handle_;
 
     shared_part part_;

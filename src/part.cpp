@@ -17,9 +17,9 @@ namespace src
 {
 
 ////////////////////////////////////////////////////////////////////////////////
-part::part(const src::context& settings, int nr, offset from, offset to) :
+part::part(int nr, offset from, offset to) :
     util::logger("part " + std::to_string(nr)),
-    nr_(nr), from_(from), to_(to), path_(settings.output)
+    nr_(nr), from_(from), to_(to), path_(context::instance()->output)
 {
     auto from_to = std::to_string(from_) + "-" + std::to_string(to_);
     info() << "range = " << from_to;

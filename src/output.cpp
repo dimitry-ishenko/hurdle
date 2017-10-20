@@ -13,11 +13,13 @@ namespace src
 {
 
 ////////////////////////////////////////////////////////////////////////////////
-output::output(const src::context& settings) : util::logger("out")
+output::output() : util::logger("out")
 {
-    info() << "opening file " << settings.output;
+    auto ctx = context::instance();
+
+    info() << "opening file " << ctx->output;
     using std::ios_base;
-    file_.open(settings.output, ios_base::out | ios_base::app | ios_base::binary);
+    file_.open(ctx->output, ios_base::out | ios_base::app | ios_base::binary);
 
     if(!file_) throw std::runtime_error("Output open failed");
 }

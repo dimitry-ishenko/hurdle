@@ -23,9 +23,10 @@ class head : private util::logger
 {
 public:
     ////////////////////
-    explicit head(const context&);
+    head();
     ~head() noexcept;
 
+    ////////////////////
     auto size() const noexcept { return size_; }
 
 private:

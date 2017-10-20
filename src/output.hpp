@@ -23,8 +23,9 @@ class output : private util::logger
 {
 public:
     ////////////////////
-    explicit output(const context&);
+    output();
 
+    ////////////////////
     auto size() { return file_.tellp(); }
 
 private:
