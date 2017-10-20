@@ -38,11 +38,8 @@ part::part(int nr, offset from, offset to) : util::logger("part " + std::to_stri
 ////////////////////////////////////////////////////////////////////////////////
 part::~part() noexcept
 {
-    if(file_.is_open())
-    {
-        info() << "closing file";
-        file_.close();
-    }
+    info() << "closing file";
+    file_.close();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

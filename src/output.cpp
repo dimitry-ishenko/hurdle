@@ -25,27 +25,27 @@ output::output() : util::logger("out")
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void output::merge(src::part part)
+void output::merge(part_ptr part)
 {
-    parts_.emplace(part.nr(), std::move(part));
+    parts_.emplace(part->nr(), std::move(part));
 
     while(parts_.begin() != parts_.end())
     {
-        src::part& part = std::get<1>(*parts_.begin());
-        if(part.from() == size())
+        auto& part = std::get<1>(*parts_.begin());
+        if(part->from() == size())
         {
-            info() << "merging part " << part.nr();
+            info() << "merging part " << part->nr();
 
-            auto store = part.read_all();
+            auto store = part->read_all();
             file_.write(store.data(), store.size());
             if(!file_) throw std::runtime_error("Failed to write part data");
 
             info() << "size = " << size();
 
-            part.remove();
+            part->remove();
             parts_.erase(parts_.begin());
         }
-        else if(part.from() > size()) break;
+        else if(part->from() > size()) break;
         else throw std::invalid_argument("Invalid part");
     }
 }

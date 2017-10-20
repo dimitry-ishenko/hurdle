@@ -41,8 +41,8 @@ down::down(int nr, offset from, offset to) :
 ////////////////////////////////////////////////////////////////////////////////
 down::~down() noexcept
 {
-    if(future_.valid()) future_.wait();
-    if(handle_) curl_easy_cleanup(handle_);
+    future_.wait();
+    curl_easy_cleanup(handle_);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -60,7 +60,7 @@ offset down::speed() noexcept
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-part down::read(int nr, offset from, offset to)
+part_ptr down::read(int nr, offset from, offset to)
 {
     auto ctx = context::instance();
 
@@ -70,22 +70,22 @@ part down::read(int nr, offset from, offset to)
         if(count) info() << "Retrying";
 
         ////////////////////
-        part_ = part(nr, from, to);
-        if(to - from + 1 == part_.size())
+        part_ = std::make_unique<src::part>(nr, from, to);
+        if(to - from + 1 == part_->size())
         {
             info() << "already done";
             return std::move(part_);
         }
 
         auto start = from;
-        if(part_.size())
+        if(part_->size())
         {
-            info() << "skipping " << part_.size();
-            start += part_.size();
+            info() << "skipping " << part_->size();
+            start += part_->size();
         }
         if(start > to) throw std::invalid_argument("Invalid range");
 
-        size_ = part_.size();
+        size_ = part_->size();
 
         ////////////////////
         auto range = std::to_string(start) + "-" + std::to_string(to);
@@ -110,7 +110,7 @@ size_t down::write(void* data, size_t size, size_t n, void* pvoid)
     self->size_ += n;
     self->piece_ += n;
 
-    return self->part_.write(static_cast<const char*>(data), total);
+    return self->part_->write(static_cast<const char*>(data), total);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

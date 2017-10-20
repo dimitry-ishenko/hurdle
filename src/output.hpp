@@ -30,12 +30,12 @@ public:
     ////////////////////
     auto size() noexcept { return file_.tellp(); }
 
-    void merge(part);
+    void merge(part_ptr);
 
 private:
     ////////////////////
     std::fstream file_;
-    std::map<int, part> parts_;
+    std::map<int, part_ptr> parts_;
 };
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -16,6 +16,7 @@
 #include <atomic>
 #include <chrono>
 #include <future>
+#include <memory>
 #include <utility>
 
 #include <curl/curl.h>
@@ -25,37 +26,20 @@ namespace src
 {
 
 ////////////////////////////////////////////////////////////////////////////////
+class down;
+using down_ptr = std::unique_ptr<down>;
+
+////////////////////////////////////////////////////////////////////////////////
 class down : private util::logger
 {
 public:
     ////////////////////
-    down() = default;
     down(int nr, offset from, offset to);
     ~down() noexcept;
 
-    down(const down&) = delete;
-    down(down&& rhs) noexcept { swap(rhs); }
-
-    down& operator=(const down&) = delete;
-    down& operator=(down&& rhs) noexcept { swap(rhs); return *this; }
-
-    void swap(down& rhs) noexcept
-    {
-        util::logger::operator=(std::move(rhs));
-
-        using std::swap;
-        swap(handle_, rhs.handle_);
-        swap(future_, rhs.future_);
-        swap(part_  , rhs.part_  );
-        size_ = rhs.size_.exchange(size_);
-        swap(total_ , rhs.total_ );
-        piece_ = rhs.piece_.exchange(piece_);
-        swap(tp_    , rhs.tp_    );
-    }
-
     ////////////////////
     bool ready() const { return future_.wait_for(secs(0)) == std::future_status::ready; }
-    part get() { return future_.get(); }
+    part_ptr part() { return future_.get(); }
 
     offset size() const noexcept { return size_; }
     double done() const noexcept { return size() / total_; }
@@ -66,10 +50,10 @@ private:
     ////////////////////
     CURL* handle_ = nullptr;
 
-    std::future<part> future_;
-    part read(int nr, offset from, offset to);
+    std::future<part_ptr> future_;
+    part_ptr read(int nr, offset from, offset to);
 
-    part part_;
+    part_ptr part_;
     std::atomic<offset> size_;
     double total_;
 
@@ -80,9 +64,6 @@ private:
 
     static size_t write(void* data, size_t size, size_t n, void* pvoid);
 };
-
-////////////////////////////////////////////////////////////////////////////////
-inline void swap(down& lhs, down& rhs) noexcept { lhs.swap(rhs); }
 
 ////////////////////////////////////////////////////////////////////////////////
 }
