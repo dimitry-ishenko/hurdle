@@ -35,6 +35,8 @@ struct context
 
     std::size_t retry_count = 10;
     secs retry_sleep { 3 };
+
+    static context* instance();
 };
 
 ////////////////////////////////////////////////////////////////////////////////
