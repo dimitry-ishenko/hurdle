@@ -31,6 +31,8 @@ part::part(int nr, offset from, offset to) : util::logger("part " + std::to_stri
     info() << "opening file " << path_;
     file_.open(path_, file_.out | file_.app | file_.binary);
     if(!file_) throw std::runtime_error("Failed to open part file");
+
+    info() << "size = " << size();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
