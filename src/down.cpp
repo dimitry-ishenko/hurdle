@@ -48,8 +48,6 @@ down::~down() noexcept
 ////////////////////////////////////////////////////////////////////////////////
 offset down::speed() noexcept
 {
-    using msec = std::chrono::milliseconds;
-
     auto val = clock::now() - tp_;
     if(val < msec(1)) return 0;
 
