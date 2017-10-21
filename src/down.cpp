@@ -92,7 +92,11 @@ part_ptr down::read(int nr, offset from, offset to)
         curl_easy_setopt(handle_, CURLOPT_RANGE, range.data());
 
         code = curl_easy_perform(handle_);
-        if(code == CURLE_OK) return std::move(part_);
+        if(code == CURLE_OK)
+        {
+            info() << "done";
+            return std::move(part_);
+        }
 
         ////////////////////
         std::this_thread::sleep_for(ctx->retry_sleep);
