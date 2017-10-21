@@ -21,6 +21,8 @@ Where [option...] is one or more of the following:
     -h, --help           Show this help screen and exit
     -q, --quiet          Don't output anything
     -o, --output=<path>  Output data to <path>
+    -c, --part-count=<n> Download <n> parts at the same time
+    -s, --part-size=<n>  Download parts of <n> bytes in size
 ```
 
 ## Authors

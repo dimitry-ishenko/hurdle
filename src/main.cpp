@@ -74,6 +74,17 @@ bool starts_with(const std::string& arg, const std::string& prefix, std::string&
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+int number(const std::string& value)
+try
+{
+    std::size_t p = 0;
+    int n = std::stoi(value, &p);
+    if(p != value.size()) throw "stoi";
+    return n;
+}
+catch(...) { throw invalid_argument("Invalid number"); }
+
+////////////////////////////////////////////////////////////////////////////////
 void read_args(int argc, char* argv[])
 {
     auto ctx = src::context::instance();
@@ -81,6 +92,7 @@ void read_args(int argc, char* argv[])
     for(int i = 1; i < argc; ++i)
     {
         std::string arg = argv[i];
+        std::string value;
 
              if(arg.empty()) continue;
         else if(arg == "-v" || arg == "--version") version(argv[0]), throw need_to_exit();
@@ -94,6 +106,26 @@ void read_args(int argc, char* argv[])
         else if(starts_with(arg, "--output=", ctx->output))
         {
             if(ctx->output.empty()) throw invalid_argument("Missing output path");
+        }
+        else if(arg == "-c" || arg == "--part-count" )
+        {
+            if(i + 1 < argc) ctx->part_count = number(argv[++i]);
+            else throw invalid_argument("Missing number");
+        }
+        else if(starts_with(arg, "--part-count=", value))
+        {
+            if(value.size()) ctx->part_count = number(value);
+            else throw invalid_argument("Missing number");
+        }
+        else if(arg == "-s" || arg == "--part-size" )
+        {
+            if(i + 1 < argc) ctx->part_size = number(argv[++i]);
+            else throw invalid_argument("Missing number");
+        }
+        else if(starts_with(arg, "--part-size=", value))
+        {
+            if(value.size()) ctx->part_size = number(value);
+            else throw invalid_argument("Missing number");
         }
         else if(arg[0] != '-') ctx->url = arg;
         else throw invalid_argument("Invalid argument: " + arg);
@@ -130,5 +162,7 @@ void usage(const char* name)
                  "    -h, --help           Show this help screen and exit\n"
                  "    -q, --quiet          Don't output anything\n"
                  "    -o, --output=<path>  Output data to <path>\n"
+                 "    -c, --part-count=<n> Download <n> parts at the same time\n"
+                 "    -s, --part-size=<n>  Download parts of <n> bytes in size\n"
               << std::endl;
 }
