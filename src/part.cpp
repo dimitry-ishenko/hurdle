@@ -44,6 +44,12 @@ part::~part() noexcept
 {
     info() << "closing file";
     file_.close();
+
+    if(remove_)
+    {
+        info() << "removing file";
+        if(std::remove(path_.data())) err() << "Failed to remove file";
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -62,13 +68,6 @@ std::vector<char> part::read_all()
     if(!file_) throw std::runtime_error("Failed to read part data");
 
     return store;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-void part::remove() noexcept
-{
-    info() << "removing file";
-    if(std::remove(path_.data())) err() << "Failed to remove file";
 }
 
 ////////////////////////////////////////////////////////////////////////////////

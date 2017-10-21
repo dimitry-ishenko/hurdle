@@ -45,7 +45,7 @@ public:
     offset write(const char*, offset);
     std::vector<char> read_all();
 
-    void remove() noexcept;
+    void remove() noexcept { remove_ = true; }
 
 private:
     ////////////////////
@@ -53,6 +53,8 @@ private:
 
     std::string path_;
     std::fstream file_;
+
+    bool remove_ = false;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
