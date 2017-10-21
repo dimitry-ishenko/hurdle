@@ -53,6 +53,7 @@ std::string scaled(double value)
 
 ////////////////////////////////////////////////////////////////////////////////
 int down_all::run()
+try
 {
     info() << "starting";
 
@@ -119,6 +120,18 @@ int down_all::run()
 
     info() << "done";
     return 0;
+}
+catch(std::exception& e)
+{
+    err() << e.what();
+
+    while(downs_.begin() != downs_.end())
+    {
+        downs_.begin()->second->cancel();
+        downs_.erase(downs_.begin());
+    }
+
+    return 1;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
