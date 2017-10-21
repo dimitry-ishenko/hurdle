@@ -1,5 +1,5 @@
 ########## DEFINITIONS #################
-TARGETS		:= durl
+TARGETS		:= hurdle
 
 SUBDIRS		:= src util
 SOURCES		:=
