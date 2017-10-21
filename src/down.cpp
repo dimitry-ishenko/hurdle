@@ -65,7 +65,7 @@ part_ptr down::read(int nr, offset from, offset to)
     CURLcode code = CURLE_OK;
     for(std::size_t count = 0; count < ctx->retry_count; ++count)
     {
-        if(count) info() << "Retrying";
+        if(count) info() << "retrying";
 
         ////////////////////
         part_ = std::make_unique<src::part>(nr, from, to);
