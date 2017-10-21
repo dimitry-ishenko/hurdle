@@ -63,6 +63,17 @@ int main(int argc, char* argv[])
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+bool starts_with(const std::string& arg, const std::string& prefix, std::string& value)
+{
+    if(0 == arg.compare(0, prefix.size(), prefix))
+    {
+        value = arg.substr(prefix.size());
+        return true;
+    }
+    else return false;
+}
+
+////////////////////////////////////////////////////////////////////////////////
 void read_args(int argc, char* argv[])
 {
     auto ctx = src::context::instance();
@@ -80,10 +91,9 @@ void read_args(int argc, char* argv[])
             if(i + 1 < argc) ctx->output = argv[++i];
             else throw invalid_argument("Missing output path");
         }
-        else if(0 == arg.compare(0, 9, "--output="))
+        else if(starts_with(arg, "--output=", ctx->output))
         {
-            if(arg.size() > 9) ctx->output = arg.substr(9);
-            else throw invalid_argument("Missing output path");
+            if(ctx->output.empty()) throw invalid_argument("Missing output path");
         }
         else if(arg[0] != '-') ctx->url = arg;
         else throw invalid_argument("Invalid argument: " + arg);
