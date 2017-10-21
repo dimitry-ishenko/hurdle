@@ -12,7 +12,6 @@
 #include "down.hpp"
 #include "head.hpp"
 #include "output.hpp"
-#include "part.hpp"
 #include "util/logging.hpp"
 
 #include <map>
@@ -36,8 +35,10 @@ private:
     head head_;
     output output_;
 
+    offset size_;
+
     int nr = 0;
-    std::map<int, down> down_;
+    std::map<int, down_ptr> downs_;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
