@@ -28,8 +28,12 @@ part::part(int nr, offset from, offset to) : util::logger("part " + std::to_stri
     if(p == std::string::npos) p = path_.size();
     path_.insert(p, "_" + range);
 
+    // create file, if it doesn't exist
+    file_.open(path_, file_.app);
+    file_.close();
+
     info() << "opening file " << path_;
-    file_.open(path_, file_.out | file_.app | file_.binary);
+    file_.open(path_, file_.in | file_.out | file_.binary | file_.ate);
     if(!file_) throw std::runtime_error("Failed to open part file");
 
     info() << "size = " << size();
