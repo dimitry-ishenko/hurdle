@@ -41,7 +41,7 @@ down::down(int nr, offset from, offset to) :
 ////////////////////////////////////////////////////////////////////////////////
 down::~down() noexcept
 {
-    future_.wait();
+    if(future_.valid()) future_.wait();
     curl_easy_cleanup(handle_);
 }
 
