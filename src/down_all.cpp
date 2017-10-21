@@ -19,7 +19,7 @@ namespace src
 ////////////////////////////////////////////////////////////////////////////////
 down_all::down_all() : util::logger("down")
 {
-    size_ = output_.size();
+    size_ = done_ = output_.size();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -76,7 +76,7 @@ int down_all::run()
         // show status
         std::ostringstream os;
 
-        double speed_total = 0, size_total = output_.size();
+        double speed_total = 0, size_total = done_;
         for(auto& pair : downs_)
         {
             int nr = std::get<0>(pair);
@@ -105,6 +105,8 @@ int down_all::run()
             if(down->ready())
             {
                 output_.merge(down->part());
+                done_ += down->size();
+
                 fi = downs_.erase(fi);
             }
             else ++fi;
