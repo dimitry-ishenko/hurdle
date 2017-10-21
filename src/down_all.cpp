@@ -70,6 +70,7 @@ int down_all::run()
 
             size_ = end;
             ++nr;
+            std::this_thread::sleep_for(msec(1));
         }
 
         ////////////////////
