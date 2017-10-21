@@ -66,10 +66,10 @@ int down_all::run()
             auto end = size_ - (size_ % ctx->part_size) + ctx->part_size;
             if(end > head_.size()) end = head_.size();
 
+            int nr = size_ / ctx->part_size;
             downs_.emplace(nr, std::make_unique<down>(nr, size_, end - 1));
 
             size_ = end;
-            ++nr;
             std::this_thread::sleep_for(msec(1));
         }
 

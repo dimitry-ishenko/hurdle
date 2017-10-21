@@ -36,8 +36,6 @@ private:
     output output_;
 
     offset size_, done_;
-
-    int nr = 0;
     std::map<int, down_ptr> downs_;
 };
 
