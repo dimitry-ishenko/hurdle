@@ -41,6 +41,8 @@ public:
     bool ready() const { return future_.wait_for(secs(0)) == std::future_status::ready; }
     part_ptr part() { return future_.get(); }
 
+    void cancel() noexcept { cancel_ = true; }
+
     offset size() const noexcept { return size_; }
     double done() const noexcept { return size() / total_; }
 
@@ -54,6 +56,8 @@ private:
     part_ptr read(int nr, offset from, offset to);
 
     part_ptr part_;
+    std::atomic<bool> cancel_ { false };
+
     std::atomic<offset> size_;
     double total_;
 

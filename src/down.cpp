@@ -96,6 +96,11 @@ part_ptr down::read(int nr, offset from, offset to)
             info() << "done";
             return std::move(part_);
         }
+        else if(cancel_)
+        {
+            info() << "cancel";
+            return part_ptr();
+        }
 
         ////////////////////
         std::this_thread::sleep_for(ctx->retry_sleep);
@@ -108,6 +113,7 @@ part_ptr down::read(int nr, offset from, offset to)
 size_t down::write(void* data, size_t size, size_t n, void* pvoid)
 {
     auto self = static_cast<down*>(pvoid);
+    if(self->cancel_) return 0;
 
     offset total = size * n;
     self->size_ += n;
