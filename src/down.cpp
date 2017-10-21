@@ -71,21 +71,22 @@ part_ptr down::read(int nr, offset from, offset to)
 
         ////////////////////
         part_ = std::make_unique<src::part>(nr, from, to);
-        if(to - from + 1 == part_->size())
+        size_ = part_->size();
+
+        if(to - from + 1 == size_)
         {
             info() << "already done";
             return std::move(part_);
         }
 
         auto start = from;
-        if(part_->size())
+        if(size_)
         {
-            info() << "skipping " << part_->size();
-            start += part_->size();
+            info() << "skipping " << size_;
+            start += size_;
         }
         if(start > to) throw std::invalid_argument("Invalid range");
 
-        size_ = part_->size();
 
         ////////////////////
         auto range = std::to_string(start) + "-" + std::to_string(to);
