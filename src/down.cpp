@@ -68,6 +68,7 @@ part_ptr down::read(int nr, offset from, offset to)
         if(count) info() << "retrying";
 
         ////////////////////
+        part_.reset();
         part_ = std::make_unique<src::part>(nr, from, to);
         size_ = part_->size();
 
