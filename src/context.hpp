@@ -30,8 +30,8 @@ struct context
     std::string url;
     std::string output;
 
-    std::size_t part_count = 5;
-    offset part_size = 100000000;
+    std::size_t part_count = 10;
+    offset part_size = 10000000;
 
     secs read_timeout { 20 };
 
