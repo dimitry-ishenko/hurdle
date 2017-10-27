@@ -62,26 +62,38 @@ int main(int argc, char* argv[])
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-bool starts_with(const std::string& arg, const std::string& prefix, std::string& value)
-{
-    if(0 == arg.compare(0, prefix.size(), prefix))
-    {
-        value = arg.substr(prefix.size());
-        return true;
-    }
-    else return false;
-}
-
-////////////////////////////////////////////////////////////////////////////////
 int number(const std::string& value)
 try
 {
     std::size_t p = 0;
     int n = std::stoi(value, &p);
-    if(p != value.size()) throw "stoi";
-    return n;
+    return p == value.size() ? n : 0;
 }
-catch(...) { throw invalid_argument("Invalid number"); }
+catch(...) { return 0; }
+
+////////////////////////////////////////////////////////////////////////////////
+bool read_opt(char**& args, const std::string& short_opt, const std::string& long_opt, std::string& value)
+{
+    std::string arg = *args;
+
+    if(arg == short_opt || arg == long_opt)
+    {
+        if(!*++args) throw invalid_argument("Missing value for option " + arg);
+
+        value = *args;
+        return true;
+    }
+    else if(0 == arg.compare(0, long_opt.size(), long_opt))
+    {
+        if(arg[long_opt.size()] == '=')
+        {
+            value = arg.substr(long_opt.size() + 1);
+            return true;
+        }
+    }
+
+    return false;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 void read_args(const std::string& name, char** args)
@@ -97,41 +109,26 @@ void read_args(const std::string& name, char** args)
         else if(arg == "-v" || arg == "--version") version(name), throw need_to_exit();
         else if(arg == "-h" || arg == "--help"   ) usage(name), throw need_to_exit();
         else if(arg == "-q" || arg == "--quiet"  ) util::send_to_console(false);
-        else if(arg == "-o" || arg == "--output" )
+        else if(read_opt(args, "-o", "--output", ctx->output))
         {
-            if(*++args) ctx->output = *args;
-            else throw invalid_argument("Missing output path");
+            if(ctx->output.empty()) throw invalid_argument("Invalid output path");
         }
-        else if(starts_with(arg, "--output=", ctx->output))
+        else if(read_opt(args, "-c", "--part-count", value))
         {
-            if(ctx->output.empty()) throw invalid_argument("Missing output path");
+            ctx->part_count = number(value);
+            if(ctx->part_count < 1) throw invalid_argument("Invalid part count");
         }
-        else if(arg == "-c" || arg == "--part-count" )
+        else if(read_opt(args, "-s", "--part-size", value))
         {
-            if(*++args) ctx->part_count = number(*args);
-            else throw invalid_argument("Missing number");
-        }
-        else if(starts_with(arg, "--part-count=", value))
-        {
-            if(value.size()) ctx->part_count = number(value);
-            else throw invalid_argument("Missing number");
-        }
-        else if(arg == "-s" || arg == "--part-size" )
-        {
-            if(*++args) ctx->part_size = number(*args);
-            else throw invalid_argument("Missing number");
-        }
-        else if(starts_with(arg, "--part-size=", value))
-        {
-            if(value.size()) ctx->part_size = number(value);
-            else throw invalid_argument("Missing number");
+            ctx->part_size = number(value);
+            if(ctx->part_size < 1) throw invalid_argument("Invalid part size");
         }
         else if(arg[0] != '-') ctx->url = arg;
-        else throw invalid_argument("Invalid argument: " + arg);
+        else throw invalid_argument("Invalid argument " + arg);
     }
 
     ////////////////////
-    if(ctx->url.empty()) throw invalid_argument("Missing url");
+    if(ctx->url.empty()) throw invalid_argument("Invalid or missing url");
 
     if(ctx->output.empty())
     {
