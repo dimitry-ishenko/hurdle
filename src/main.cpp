@@ -24,9 +24,9 @@ struct invalid_argument : public std::invalid_argument
 
 struct need_to_exit : public std::exception { };
 
-void read_args(int argc, char* argv[]);
-void version(const char*);
-void usage(const char*);
+void read_args(const std::string& name, char** args);
+void version(const std::string& name);
+void usage(const std::string& name);
 
 ////////////////////////////////////////////////////////////////////////////////
 int main(int argc, char* argv[])
@@ -36,8 +36,7 @@ int main(int argc, char* argv[])
 
     try
     {
-        read_args(argc, argv);
-
+        read_args(argv[0], argv+1);
         code = src::down_all().run();
     }
     catch(invalid_argument& e)
@@ -85,22 +84,22 @@ try
 catch(...) { throw invalid_argument("Invalid number"); }
 
 ////////////////////////////////////////////////////////////////////////////////
-void read_args(int argc, char* argv[])
+void read_args(const std::string& name, char** args)
 {
     auto ctx = src::context::instance();
 
-    for(int i = 1; i < argc; ++i)
+    for(; *args; ++args)
     {
-        std::string arg = argv[i];
+        std::string arg = *args;
         std::string value;
 
              if(arg.empty()) continue;
-        else if(arg == "-v" || arg == "--version") version(argv[0]), throw need_to_exit();
-        else if(arg == "-h" || arg == "--help"   ) usage(argv[0]), throw need_to_exit();
+        else if(arg == "-v" || arg == "--version") version(name), throw need_to_exit();
+        else if(arg == "-h" || arg == "--help"   ) usage(name), throw need_to_exit();
         else if(arg == "-q" || arg == "--quiet"  ) util::send_to_console(false);
         else if(arg == "-o" || arg == "--output" )
         {
-            if(i + 1 < argc) ctx->output = argv[++i];
+            if(*++args) ctx->output = *args;
             else throw invalid_argument("Missing output path");
         }
         else if(starts_with(arg, "--output=", ctx->output))
@@ -109,7 +108,7 @@ void read_args(int argc, char* argv[])
         }
         else if(arg == "-c" || arg == "--part-count" )
         {
-            if(i + 1 < argc) ctx->part_count = number(argv[++i]);
+            if(*++args) ctx->part_count = number(*args);
             else throw invalid_argument("Missing number");
         }
         else if(starts_with(arg, "--part-count=", value))
@@ -119,7 +118,7 @@ void read_args(int argc, char* argv[])
         }
         else if(arg == "-s" || arg == "--part-size" )
         {
-            if(i + 1 < argc) ctx->part_size = number(argv[++i]);
+            if(*++args) ctx->part_size = number(*args);
             else throw invalid_argument("Missing number");
         }
         else if(starts_with(arg, "--part-size=", value))
@@ -130,7 +129,6 @@ void read_args(int argc, char* argv[])
         else if(arg[0] != '-') ctx->url = arg;
         else throw invalid_argument("Invalid argument: " + arg);
     }
-
 
     ////////////////////
     if(ctx->url.empty()) throw invalid_argument("Missing url");
@@ -148,13 +146,13 @@ void read_args(int argc, char* argv[])
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void version(const char* name)
+void version(const std::string& name)
 {
     std::cout << name << " version " << major << '.' << minor << std::endl;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void usage(const char* name)
+void usage(const std::string& name)
 {
     std::cout << "Usage: " << name << " [option...] <url>\n" << std::endl;
     std::cout << "Where [option...] is one or more of the following:\n"
