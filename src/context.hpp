@@ -35,7 +35,7 @@ struct context
 
     secs timeout { 20 };
 
-    std::size_t retry = 10;
+    std::size_t retry = 9;
     secs retry_time { 3 };
 
     static context* instance();

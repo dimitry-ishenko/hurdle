@@ -61,21 +61,27 @@ offset down::speed() noexcept
 part_ptr down::read(int nr, offset from, offset to)
 {
     auto ctx = context::instance();
-
     CURLcode code = CURLE_OK;
-    for(std::size_t count = 0; count < ctx->retry; ++count)
+    std::size_t retry = 0;
+
+    goto start;
+    for(;; ++retry)
     {
-        if(count) info() << "retrying";
+        if(retry > ctx->retry) throw std::runtime_error(curl_easy_strerror(code));
+
+        part_.reset();
+        std::this_thread::sleep_for(ctx->retry_time);
+        info() << "retrying";
 
         ////////////////////
-        part_.reset();
+    start:
         part_ = std::make_unique<src::part>(nr, from, to);
         size_ = part_->size();
 
         if(to - from + 1 == size_)
         {
             info() << "already done";
-            return std::move(part_);
+            break;
         }
 
         auto start = from;
@@ -86,7 +92,6 @@ part_ptr down::read(int nr, offset from, offset to)
         }
         if(start > to) throw std::invalid_argument("Invalid range");
 
-
         ////////////////////
         auto range = std::to_string(start) + "-" + std::to_string(to);
         curl_easy_setopt(handle_, CURLOPT_RANGE, range.data());
@@ -95,19 +100,17 @@ part_ptr down::read(int nr, offset from, offset to)
         if(code == CURLE_OK)
         {
             info() << "done";
-            return std::move(part_);
+            break;
         }
         else if(cancel_)
         {
             info() << "cancel";
-            return part_ptr();
+            part_.reset();
+            break;
         }
-
-        ////////////////////
-        std::this_thread::sleep_for(ctx->retry_time);
     }
 
-    throw std::runtime_error(curl_easy_strerror(code));
+    return std::move(part_);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
