@@ -26,7 +26,15 @@ head::head() : util::logger("head")
     curl_easy_setopt(handle_, CURLOPT_CONNECTTIMEOUT, ctx->timeout.count());
     curl_easy_setopt(handle_, CURLOPT_TIMEOUT, ctx->timeout.count());
 
-    ////////////////////
+    update();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+head::~head() noexcept { curl_easy_cleanup(handle_); }
+
+////////////////////////////////////////////////////////////////////////////////
+void head::update()
+{
     auto code = curl_easy_perform(handle_);
     if(code) throw std::runtime_error(curl_easy_strerror(code));
 
@@ -37,9 +45,6 @@ head::head() : util::logger("head")
     size_ = size;
     info() << "size = " << size_;
 }
-
-////////////////////////////////////////////////////////////////////////////////
-head::~head() noexcept { curl_easy_cleanup(handle_); }
 
 ////////////////////////////////////////////////////////////////////////////////
 }

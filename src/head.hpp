@@ -27,6 +27,7 @@ public:
     ~head() noexcept;
 
     ////////////////////
+    void update();
     auto size() const noexcept { return size_; }
 
 private:
