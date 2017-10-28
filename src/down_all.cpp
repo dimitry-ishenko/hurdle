@@ -62,7 +62,7 @@ try
     {
         ////////////////////
         // add new parts
-        while(size_ < head_.size() && downs_.size() < ctx->part_count)
+        while(size_ < head_.size() && downs_.size() < ctx->parts)
         {
             auto end = size_ - (size_ % ctx->part_size) + ctx->part_size;
             if(end > head_.size()) end = head_.size();

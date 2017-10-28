@@ -29,9 +29,9 @@ down::down(int nr, offset from, offset to) :
     curl_easy_setopt(handle_, CURLOPT_WRITEFUNCTION, &down::write);
     curl_easy_setopt(handle_, CURLOPT_WRITEDATA, this);
 
-    curl_easy_setopt(handle_, CURLOPT_CONNECTTIMEOUT, ctx->read_timeout.count());
+    curl_easy_setopt(handle_, CURLOPT_CONNECTTIMEOUT, ctx->timeout.count());
     curl_easy_setopt(handle_, CURLOPT_LOW_SPEED_LIMIT, 1);
-    curl_easy_setopt(handle_, CURLOPT_LOW_SPEED_TIME, ctx->read_timeout.count());
+    curl_easy_setopt(handle_, CURLOPT_LOW_SPEED_TIME, ctx->timeout.count());
 
     ////////////////////
     tp_ = clock::now();
@@ -63,7 +63,7 @@ part_ptr down::read(int nr, offset from, offset to)
     auto ctx = context::instance();
 
     CURLcode code = CURLE_OK;
-    for(std::size_t count = 0; count < ctx->retry_count; ++count)
+    for(std::size_t count = 0; count < ctx->retry; ++count)
     {
         if(count) info() << "retrying";
 
@@ -104,7 +104,7 @@ part_ptr down::read(int nr, offset from, offset to)
         }
 
         ////////////////////
-        std::this_thread::sleep_for(ctx->retry_sleep);
+        std::this_thread::sleep_for(ctx->retry_time);
     }
 
     throw std::runtime_error(curl_easy_strerror(code));

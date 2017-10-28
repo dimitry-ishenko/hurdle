@@ -30,13 +30,13 @@ struct context
     std::string url;
     std::string output;
 
-    std::size_t part_count = 10;
+    std::size_t parts = 10;
     offset part_size = 10000000;
 
-    secs read_timeout { 20 };
+    secs timeout { 20 };
 
-    std::size_t retry_count = 10;
-    secs retry_sleep { 3 };
+    std::size_t retry = 10;
+    secs retry_time { 3 };
 
     static context* instance();
 };

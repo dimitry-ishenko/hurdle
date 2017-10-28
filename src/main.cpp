@@ -110,32 +110,32 @@ void read_args(const std::string& name, char** args)
         {
             if(ctx->output.empty()) throw invalid_argument("Invalid output path");
         }
-        else if(read_opt(args, "-c", "--part-count", s))
+        else if(read_opt(args, "-n", "--parts", s))
         {
             auto n = number(s);
-            if(n < 1) throw invalid_argument("Invalid part count");
-            ctx->part_count = n;
+            if(n < 1) throw invalid_argument("Invalid # of parts");
+            ctx->parts = n;
         }
         else if(read_opt(args, "-s", "--part-size", s))
         {
             ctx->part_size = number(s);
             if(ctx->part_size < 1) throw invalid_argument("Invalid part size");
         }
-        else if(read_opt(args, "", "--read-timeout", s))
+        else if(read_opt(args, "", "--timeout", s))
         {
-            ctx->read_timeout = src::secs(number(s));
-            if(ctx->read_timeout.count() < 0) throw invalid_argument("Invalid read timeout");
+            ctx->timeout = src::secs(number(s));
+            if(ctx->timeout.count() < 0) throw invalid_argument("Invalid timeout");
         }
-        else if(read_opt(args, "", "--retry-count", s))
+        else if(read_opt(args, "", "--retry", s))
         {
             auto n = number(s);
-            if(n < 0) throw invalid_argument("Invalid retry count");
-            ctx->retry_count = n;
+            if(n < 0) throw invalid_argument("Invalid # of retries");
+            ctx->retry = n;
         }
         else if(read_opt(args, "", "--retry-time", s))
         {
-            ctx->retry_sleep = src::secs(number(s));
-            if(ctx->retry_sleep.count() < 0) throw invalid_argument("Invalid retry time");
+            ctx->retry_time = src::secs(number(s));
+            if(ctx->retry_time.count() < 0) throw invalid_argument("Invalid retry time");
         }
         else if(arg == "-v" || arg == "--version") version(name), throw need_to_exit();
         else if(arg == "-h" || arg == "--help"   ) usage(name), throw need_to_exit();
@@ -170,12 +170,12 @@ void usage(const std::string& name)
 {
     std::cout << "Usage: " << name << " [option...] <url>\n" << std::endl;
     std::cout << "Where [option...] is one or more of the following:\n"
-                 "    -o, --output=<path>       Output data to <path>\n"
-                 "    -c, --part-count=<n>      Download up to <n> parts at a time\n"
-                 "    -s, --part-size=<n>       Part size in bytes\n"
-                 "        --read-timeout=<s>    Read timeout in seconds\n"
-                 "        --retry-count=<n>     Retry count\n"
-                 "        --retry-time=<s>      Wait (in seconds) between retries\n"
+                 "    -o, --output=<path>       Output data to <path> file\n"
+                 "    -n, --parts=<n>           Download up to <n> parts at a time\n"
+                 "    -s, --part-size=<n>       Max part size (in bytes)\n"
+                 "        --timeout=<s>         Connection or no-data timeout (in seconds)\n"
+                 "        --retry=<n>           # of download retries for each part after failure or timeout\n"
+                 "        --retry-time=<s>      Wait time in seconds between retries\n"
                  "    -v, --version             Show version info and exit\n"
                  "    -h, --help                Show this help screen and exit\n"
                  "    -q, --quiet               Don't print anything\n"

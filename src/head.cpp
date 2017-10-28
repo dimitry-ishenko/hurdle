@@ -23,8 +23,8 @@ head::head() : util::logger("head")
     curl_easy_setopt(handle_, CURLOPT_NOBODY, true);
     curl_easy_setopt(handle_, CURLOPT_FAILONERROR, true);
 
-    curl_easy_setopt(handle_, CURLOPT_CONNECTTIMEOUT, ctx->read_timeout.count());
-    curl_easy_setopt(handle_, CURLOPT_TIMEOUT, ctx->read_timeout.count());
+    curl_easy_setopt(handle_, CURLOPT_CONNECTTIMEOUT, ctx->timeout.count());
+    curl_easy_setopt(handle_, CURLOPT_TIMEOUT, ctx->timeout.count());
 
     ////////////////////
     auto code = curl_easy_perform(handle_);
