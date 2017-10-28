@@ -67,16 +67,16 @@ try
 {
     std::size_t p = 0;
     int n = std::stoi(value, &p);
-    return p == value.size() ? n : 0;
+    return p == value.size() ? n : -1;
 }
-catch(...) { return 0; }
+catch(...) { return -1; }
 
 ////////////////////////////////////////////////////////////////////////////////
 bool read_opt(char**& args, const std::string& short_opt, const std::string& long_opt, std::string& value)
 {
     std::string arg = *args;
 
-    if(arg == short_opt || arg == long_opt)
+    if((short_opt.size() && arg == short_opt) || arg == long_opt)
     {
         if(!*++args) throw invalid_argument("Missing value for option " + arg);
 
@@ -103,26 +103,43 @@ void read_args(const std::string& name, char** args)
     for(; *args; ++args)
     {
         std::string arg = *args;
-        std::string value;
+        std::string s;
 
              if(arg.empty()) continue;
-        else if(arg == "-v" || arg == "--version") version(name), throw need_to_exit();
-        else if(arg == "-h" || arg == "--help"   ) usage(name), throw need_to_exit();
-        else if(arg == "-q" || arg == "--quiet"  ) util::send_to_console(false);
         else if(read_opt(args, "-o", "--output", ctx->output))
         {
             if(ctx->output.empty()) throw invalid_argument("Invalid output path");
         }
-        else if(read_opt(args, "-c", "--part-count", value))
+        else if(read_opt(args, "-c", "--part-count", s))
         {
-            ctx->part_count = number(value);
-            if(ctx->part_count < 1) throw invalid_argument("Invalid part count");
+            auto n = number(s);
+            if(n < 1) throw invalid_argument("Invalid part count");
+            ctx->part_count = n;
         }
-        else if(read_opt(args, "-s", "--part-size", value))
+        else if(read_opt(args, "-s", "--part-size", s))
         {
-            ctx->part_size = number(value);
+            ctx->part_size = number(s);
             if(ctx->part_size < 1) throw invalid_argument("Invalid part size");
         }
+        else if(read_opt(args, "", "--read-timeout", s))
+        {
+            ctx->read_timeout = src::secs(number(s));
+            if(ctx->read_timeout.count() < 0) throw invalid_argument("Invalid read timeout");
+        }
+        else if(read_opt(args, "", "--retry-count", s))
+        {
+            auto n = number(s);
+            if(n < 0) throw invalid_argument("Invalid retry count");
+            ctx->retry_count = n;
+        }
+        else if(read_opt(args, "", "--retry-time", s))
+        {
+            ctx->retry_sleep = src::secs(number(s));
+            if(ctx->retry_sleep.count() < 0) throw invalid_argument("Invalid retry time");
+        }
+        else if(arg == "-v" || arg == "--version") version(name), throw need_to_exit();
+        else if(arg == "-h" || arg == "--help"   ) usage(name), throw need_to_exit();
+        else if(arg == "-q" || arg == "--quiet"  ) util::send_to_console(false);
         else if(arg[0] != '-') ctx->url = arg;
         else throw invalid_argument("Invalid argument " + arg);
     }
@@ -153,11 +170,14 @@ void usage(const std::string& name)
 {
     std::cout << "Usage: " << name << " [option...] <url>\n" << std::endl;
     std::cout << "Where [option...] is one or more of the following:\n"
-                 "    -v, --version        Show version info and exit\n"
-                 "    -h, --help           Show this help screen and exit\n"
-                 "    -q, --quiet          Don't output anything\n"
-                 "    -o, --output=<path>  Output data to <path>\n"
-                 "    -c, --part-count=<n> Download <n> parts at the same time\n"
-                 "    -s, --part-size=<n>  Download parts of <n> bytes in size\n"
+                 "    -o, --output=<path>       Output data to <path>\n"
+                 "    -c, --part-count=<n>      Download up to <n> parts at a time\n"
+                 "    -s, --part-size=<n>       Part size in bytes\n"
+                 "        --read-timeout=<s>    Read timeout in seconds\n"
+                 "        --retry-count=<n>     Retry count\n"
+                 "        --retry-time=<s>      Wait (in seconds) between retries\n"
+                 "    -v, --version             Show version info and exit\n"
+                 "    -h, --help                Show this help screen and exit\n"
+                 "    -q, --quiet               Don't print anything\n"
               << std::endl;
 }
