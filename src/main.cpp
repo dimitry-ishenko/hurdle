@@ -17,7 +17,7 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 constexpr int major = 0;
-constexpr int minor = 1;
+constexpr int minor = 2;
 
 struct invalid_argument : public std::invalid_argument
 { using std::invalid_argument::invalid_argument; };
