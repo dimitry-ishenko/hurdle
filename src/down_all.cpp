@@ -55,70 +55,85 @@ std::string scaled(double value)
 int down_all::run()
 try
 {
-    info() << "starting";
-
     auto ctx = context::instance();
-    while(output_.size() < head_.size())
+    std::size_t poll = 0;
+
+    goto start;
+    for(; poll <= ctx->poll; ++poll)
     {
-        ////////////////////
-        // add new parts
-        while(size_ < head_.size() && downs_.size() < ctx->parts)
+        info() << "sleeping";
+        std::this_thread::sleep_for(ctx->poll_time);
+
         {
-            auto end = size_ - (size_ % ctx->part_size) + ctx->part_size;
-            if(end > head_.size()) end = head_.size();
-
-            int nr = size_ / ctx->part_size;
-            downs_.emplace(nr, std::make_unique<down>(nr, size_, end - 1));
-
-            size_ = end;
-            std::this_thread::sleep_for(msec(1));
+            auto before = head_.size();
+            head_.update();
+            if(head_.size() != before) poll = 0;
         }
 
-        ////////////////////
-        // show status
-        std::ostringstream os;
-
-        double speed_total = 0, size_total = done_;
-        for(auto& pair : downs_)
+    start:
+        info() << "starting";
+        while(output_.size() < head_.size())
         {
-            int nr = std::get<0>(pair);
-            auto& down = std::get<1>(pair);
-            double speed = down->speed();
-
-            os << std::setw(3) << nr << ": ";
-            os << std::setw(6) << pctage(down->done()) << " ";
-            os << std::setw(8) << scaled(speed) << " ";
-
-            speed_total += speed;
-            size_total += down->size();
-        }
-
-        os << " all: ";
-        os << std::setw(6) << pctage(size_total / head_.size()) << " ";
-        os << std::setw(8) << scaled(speed_total) << " ";
-
-        info() << os.str();
-
-        ////////////////////
-        // merge done parts
-        for(auto fi = downs_.begin(); fi != downs_.end();)
-        {
-            auto& down = std::get<1>(*fi);
-            if(down->ready())
+            ////////////////////
+            // add new parts
+            while(size_ < head_.size() && downs_.size() < ctx->parts)
             {
-                output_.merge(down->part());
-                done_ += down->size();
+                auto end = size_ - (size_ % ctx->part_size) + ctx->part_size;
+                if(end > head_.size()) end = head_.size();
 
-                fi = downs_.erase(fi);
+                int nr = size_ / ctx->part_size;
+                downs_.emplace(nr, std::make_unique<down>(nr, size_, end - 1));
+
+                size_ = end;
+                std::this_thread::sleep_for(msec(1));
             }
-            else ++fi;
-        }
 
-        ////////////////////
-        std::this_thread::sleep_for(secs(1));
+            ////////////////////
+            // show status
+            std::ostringstream os;
+
+            double speed_total = 0, size_total = done_;
+            for(auto& pair : downs_)
+            {
+                int nr = std::get<0>(pair);
+                auto& down = std::get<1>(pair);
+                double speed = down->speed();
+
+                os << std::setw(3) << nr << ": ";
+                os << std::setw(6) << pctage(down->done()) << " ";
+                os << std::setw(8) << scaled(speed) << " ";
+
+                speed_total += speed;
+                size_total += down->size();
+            }
+
+            os << " all: ";
+            os << std::setw(6) << pctage(size_total / head_.size()) << " ";
+            os << std::setw(8) << scaled(speed_total) << " ";
+
+            info() << os.str();
+
+            ////////////////////
+            // merge done parts
+            for(auto fi = downs_.begin(); fi != downs_.end();)
+            {
+                auto& down = std::get<1>(*fi);
+                if(down->ready())
+                {
+                    output_.merge(down->part());
+                    done_ += down->size();
+
+                    fi = downs_.erase(fi);
+                }
+                else ++fi;
+            }
+
+            ////////////////////
+            std::this_thread::sleep_for(secs(1));
+        }
+        info() << "done";
     }
 
-    info() << "done";
     return 0;
 }
 catch(std::exception& e)
