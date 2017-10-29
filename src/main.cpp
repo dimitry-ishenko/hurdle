@@ -137,6 +137,17 @@ void read_args(const std::string& name, char** args)
             ctx->retry_time = src::secs(number(s));
             if(ctx->retry_time.count() < 0) throw invalid_argument("Invalid retry time");
         }
+        else if(read_opt(args, "-p", "--poll", s))
+        {
+            auto n = number(s);
+            if(n < 0) throw invalid_argument("Invalid # of polls");
+            ctx->poll = n;
+        }
+        else if(read_opt(args, "", "--poll-time", s))
+        {
+            ctx->poll_time = src::secs(number(s));
+            if(ctx->poll_time.count() < 0) throw invalid_argument("Invalid poll time");
+        }
         else if(arg == "-v" || arg == "--version") version(name), throw need_to_exit();
         else if(arg == "-h" || arg == "--help"   ) usage(name), throw need_to_exit();
         else if(arg == "-q" || arg == "--quiet"  ) util::send_to_console(false);
@@ -176,6 +187,8 @@ void usage(const std::string& name)
                  "        --timeout=<s>         Connection or no-data timeout (in seconds)\n"
                  "        --retry=<n>           # of download retries for each part after failure or timeout\n"
                  "        --retry-time=<s>      Wait time in seconds between retries\n"
+                 "    -p, --poll=<n>            Poll <n> times for changes after successful download\n"
+                 "        --poll-time=<s>       Wait time in seconds between polls\n"
                  "    -v, --version             Show version info and exit\n"
                  "    -h, --help                Show this help screen and exit\n"
                  "    -q, --quiet               Don't print anything\n"
