@@ -38,6 +38,9 @@ struct context
     std::size_t retry = 9;
     secs retry_time { 3 };
 
+    std::size_t poll = 0;
+    secs poll_time { 5 };
+
     static context* instance();
 };
 
